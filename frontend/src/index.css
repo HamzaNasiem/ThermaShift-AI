@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    background-color: #1A2224;
+    color: #DCD7C9;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #1A2224;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #3F4E4F;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #A27B5C;
+  }
+}
+
+@layer components {
+  .card-warm {
+    @apply bg-[#242D30] text-[#DCD7C9] border border-[#3F4E4F]/60 rounded-2xl shadow-xl transition-all duration-200;
+  }
+
+  .card-charcoal {
+    @apply bg-[#1E2628] text-[#DCD7C9] border border-[#3F4E4F] rounded-2xl shadow-xl;
+  }
+
+  .btn-bronze {
+    @apply bg-[#A27B5C] hover:bg-[#b88c68] text-white font-bold px-4 py-2 rounded-xl transition-all duration-200 shadow-md active:scale-95 text-xs font-mono tracking-wider uppercase;
+  }
+
+  .btn-charcoal {
+    @apply bg-[#2C3639] hover:bg-[#3F4E4F] text-[#DCD7C9] font-bold px-4 py-2 rounded-xl transition-all duration-200 shadow-md active:scale-95 text-xs font-mono tracking-wider uppercase;
+  }
+}
+
+.leaflet-container {
+  background: #1A2224 !important;
+  border-radius: 16px;
+  width: 100%;
+  height: 100%;
+}
