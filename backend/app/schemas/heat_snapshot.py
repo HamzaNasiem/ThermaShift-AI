@@ -31,6 +31,11 @@ class MicrocellDetail(BaseModel):
     surface_type: str  # 'asphalt', 'concrete', 'shaded_canopy', 'green_buffer'
     solar_exposure: str  # 'direct_sun', 'partial_shade', 'full_canopy_shade'
     solar_radiation_w_m2: float
+    wbgt_f: float = 0.0
+    surface_heat_delta_f: float = 0.0
+    albedo: float = 0.0
+    hydration_l_hr: float = 0.0
+    work_rest_cycle: str = ""
     is_hotspot: bool = False
     is_refuge: bool = False
 
@@ -52,4 +57,25 @@ class MicroclimateAnalysisResponse(BaseModel):
     vector_origin_lng: float
     vector_target_lat: float
     vector_target_lng: float
+
+
+class HourlyForecastPoint(BaseModel):
+    time_label: str
+    hour: int
+    ambient_temp_f: float
+    surface_temp_f: float
+    canopy_temp_f: float
+    wbgt_f: float
+    solar_radiation_w_m2: float
+    risk_level: str
+    work_rest_ratio: str
+    hydration_liters_per_hour: float
+
+
+class HourlyForecastResponse(BaseModel):
+    site_id: uuid.UUID
+    site_name: str
+    peak_hour: str
+    peak_surface_temp_f: float
+    points: list[HourlyForecastPoint]
 

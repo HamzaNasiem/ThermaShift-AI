@@ -91,3 +91,19 @@ export interface MicroclimateAnalysis {
   vector_target_lat: number
   vector_target_lng: number
 }
+
+export interface HourlyForecastPoint {
+    hour: string;
+    surface_temp_f: number;
+    air_temp_f: number;
+    refuge_temp_f: number;
+    wbgt_f?: number;
+    solar_radiation_w_m2: number;
+    hydration_liters_per_hour: number;
+    osha_schedule: '50/10' | '30/30' | '15/45' | 'Normal';
+}
+
+export interface HourlyForecastResponse {
+    site_id: string;
+    forecast: HourlyForecastPoint[];
+}

@@ -1,4 +1,4 @@
-import type { Site, Worker, HeatSnapshot, ActionLog, TriggerCheckResponse } from '../types'
+import type { Site, Worker, HeatSnapshot, ActionLog, TriggerCheckResponse, HourlyForecastResponse } from '../types'
 
 const API_BASE = '/api'
 
@@ -106,3 +106,10 @@ export async function getMicroclimateAnalysis(siteId: string): Promise<any> {
   return res.json()
 }
 
+
+
+export async function getHourlyForecast(siteId: string): Promise<HourlyForecastResponse> {
+  const res = await fetch(`${API_BASE}/heat/forecast?site_id=${siteId}`)
+  if (!res.ok) throw new Error(`Failed to fetch hourly forecast: ${res.statusText}`)
+  return res.json()
+}

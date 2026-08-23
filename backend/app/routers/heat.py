@@ -8,7 +8,13 @@ from sqlalchemy import select
 from app.core.database import get_db
 from app.models.heat_snapshot import HeatSnapshot
 from app.models.site import Site
-from app.schemas.heat_snapshot import HeatSnapshotResponse, MicroclimateAnalysisResponse, MicrocellDetail
+from app.schemas.heat_snapshot import (
+    HeatSnapshotResponse,
+    MicroclimateAnalysisResponse,
+    MicrocellDetail,
+    HourlyForecastResponse,
+    HourlyForecastPoint
+)
 
 router = APIRouter()
 
@@ -199,4 +205,100 @@ async def get_microclimate_analysis(
         vector_origin_lng=v_orig_lng,
         vector_target_lat=v_targ_lat,
         vector_target_lng=v_targ_lng,
+    )
+
+
+@router.get("/hourly-forecast", response_model=HourlyForecastResponse)
+async def get_hourly_forecast(
+    site_id: uuid.UUID = Query(..., description="Site ID to get hourly forecast for"),
+    db: AsyncSession = Depends(get_db),
+):
+    from app.models.site import Site
+    import math
+
+    site_res = await db.execute(select(Site).where(Site.id == site_id))
+    site = site_res.scalar_one_or_none()
+    if not site:
+        raise HTTPException(status_code=404, detail="Site not found")
+
+    snap_res = await db.execute(
+        select(HeatSnapshot)
+        .where(HeatSnapshot.site_id == site_id)
+        .order_by(HeatSnapshot.captured_at.desc())
+        .limit(1)
+    )
+    snapshot = snap_res.scalar_one_or_none()
+    base_ambient_temp = float(snapshot.temperature_f) if snapshot else 95.0
+
+    points = []
+    
+    # Peak at 13:00 to 14:00
+    peak_hour = "01:00 PM"
+    peak_surface_temp = -1.0
+    
+    for h in range(9, 19):
+        # Time label
+        if h < 12:
+            time_label = f"{h:02d}:00 AM"
+        elif h == 12:
+            time_label = f"12:00 PM"
+        else:
+            time_label = f"{h-12:02d}:00 PM"
+        
+        dist_from_peak = abs(h - 13.5)
+        ambient_temp = base_ambient_temp - (abs(h - 14) * 1.5)
+        solar_rad = max(0.0, 950.0 - (dist_from_peak ** 2) * 45)
+        
+        surface_boost = 18 + (solar_rad / 950.0) * 6
+        surface_temp = ambient_temp + surface_boost
+        
+        canopy_reduction = 20 + (solar_rad / 950.0) * 5
+        canopy_temp = ambient_temp - canopy_reduction
+        
+        wbgt_f = ambient_temp * 0.7 + (solar_rad / 950.0) * 15 + 10
+        
+        if wbgt_f < 82:
+            risk = "safe"
+            work_rest = "Normal"
+            hyd = 0.75
+        elif wbgt_f < 87:
+            risk = "elevated"
+            work_rest = "50/10"
+            hyd = 1.0
+        elif wbgt_f < 90:
+            risk = "extreme"
+            work_rest = "30/30"
+            hyd = 1.25
+        elif wbgt_f < 93:
+            risk = "extreme"
+            work_rest = "15/45"
+            hyd = 1.5
+        else:
+            risk = "extreme"
+            work_rest = "STOP_WORK"
+            hyd = 1.5
+            
+        points.append(HourlyForecastPoint(
+            time_label=time_label,
+            hour=h,
+            ambient_temp_f=round(ambient_temp, 1),
+            surface_temp_f=round(surface_temp, 1),
+            canopy_temp_f=round(canopy_temp, 1),
+            wbgt_f=round(wbgt_f, 1),
+            solar_radiation_w_m2=round(solar_rad, 1),
+            risk_level=risk,
+            work_rest_ratio=work_rest,
+            hydration_liters_per_hour=hyd
+        ))
+        
+        if surface_temp > peak_surface_temp:
+            peak_surface_temp = round(surface_temp, 1)
+            peak_hour = time_label
+
+    return HourlyForecastResponse(
+        site_id=site.id,
+        site_name=site.name,
+        peak_hour=peak_hour,
+        peak_surface_temp_f=peak_surface_temp,
+        points=points
     )

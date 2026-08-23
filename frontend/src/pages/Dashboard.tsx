@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { getSites, getFortyGuardUsage, triggerCheck, getMicroclimateAnalysis } from '../lib/api'
+import { getSites, getFortyGuardUsage, triggerCheck, getMicroclimateAnalysis, getHourlyForecast } from '../lib/api'
 import { useLiveHeat } from '../hooks/useLiveHeat'
 import HeatMap from '../components/HeatMap'
 import WorkerCard from '../components/WorkerCard'
@@ -11,7 +11,8 @@ import CalleLiveModal from '../components/CalleLiveModal'
 import DirectCallModal from '../components/DirectCallModal'
 import RegisterSiteModal from '../components/RegisterSiteModal'
 import FortyGuardTelemetryModal from '../components/FortyGuardTelemetryModal'
-import type { Site, RiskLevel, MicroclimateAnalysis } from '../types'
+import { HourlyThermalForecastChart } from '../components/HourlyThermalForecastChart'
+import type { Site, RiskLevel, MicroclimateAnalysis, HourlyForecastPoint } from '../types'
 
 export default function Dashboard() {
   const [searchParams] = useSearchParams()
@@ -22,6 +23,7 @@ export default function Dashboard() {
   const [selectedSite, setSelectedSite] = useState<Site | null>(null)
   const [microclimate, setMicroclimate] = useState<MicroclimateAnalysis | null>(null)
   const [microLoading, setMicroLoading] = useState(false)
+  const [forecastData, setForecastData] = useState<HourlyForecastPoint[]>([])
 
   // Autonomous Guardian State
   const [isSimulatingEmergency, setIsSimulatingEmergency] = useState(false)
@@ -60,6 +62,10 @@ export default function Dashboard() {
         .then(setMicroclimate)
         .catch(console.error)
         .finally(() => setMicroLoading(false))
+        
+      getHourlyForecast(selectedSiteId)
+        .then((res) => setForecastData(res.forecast || []))
+        .catch(console.error)
     }
   }, [selectedSiteId, sites])
 
@@ -251,6 +257,11 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Hourly Forecast Chart */}
+      {forecastData.length > 0 && (
+        <HourlyThermalForecastChart data={forecastData} />
+      )}
 
       {/* CALL-E Live Call Tracker Modal */}
       {activeCalleCallId && (
