@@ -100,3 +100,9 @@ export async function deleteWorker(workerId: string): Promise<void> {
   if (!res.ok) throw new Error(`Failed to delete worker: ${res.statusText}`)
 }
 
+export async function getMicroclimateAnalysis(siteId: string): Promise<any> {
+  const res = await fetch(`${API_BASE}/heat/microclimate?site_id=${siteId}`)
+  if (!res.ok) throw new Error(`Failed to fetch microclimate analysis: ${res.statusText}`)
+  return res.json()
+}
+

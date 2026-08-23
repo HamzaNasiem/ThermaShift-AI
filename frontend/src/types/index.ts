@@ -56,3 +56,38 @@ export interface TriggerCheckResponse {
 }
 
 export type RiskLevel = 'normal' | 'elevated' | 'extreme'
+
+export interface MicrocellDetail {
+  id: string
+  row: number
+  col: number
+  lat: number
+  lng: number
+  temp_f: number
+  temp_c: number
+  surface_temp_f: number
+  surface_type: 'asphalt' | 'concrete' | 'shaded_canopy' | 'green_buffer' | 'soil'
+  solar_exposure: 'direct_sun' | 'partial_shade' | 'full_canopy_shade'
+  solar_radiation_w_m2: number
+  is_hotspot: boolean
+  is_refuge: boolean
+}
+
+export interface MicroclimateAnalysis {
+  site_id: string
+  site_name: string
+  ambient_temp_f: number
+  surface_temp_f: number
+  uhi_delta_f: number
+  solar_radiation_w_m2: number
+  hotspot_zone: string
+  cooling_refuge: string
+  recommended_shift_distance_m: number
+  cooling_delta_f: number
+  action_plan: string
+  microcells: MicrocellDetail[]
+  vector_origin_lat: number
+  vector_origin_lng: number
+  vector_target_lat: number
+  vector_target_lng: number
+}

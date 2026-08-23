@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { getSites, getFortyGuardUsage, triggerCheck } from '../lib/api'
+import { getSites, getFortyGuardUsage, triggerCheck, getMicroclimateAnalysis } from '../lib/api'
 import { useLiveHeat } from '../hooks/useLiveHeat'
 import HeatMap from '../components/HeatMap'
 import WorkerCard from '../components/WorkerCard'
 import AutonomousGuardianFeed from '../components/AutonomousGuardianFeed'
 import SafetyProtocolCard from '../components/SafetyProtocolCard'
+import MicroclimateTelemetryCard from '../components/MicroclimateTelemetryCard'
 import CalleLiveModal from '../components/CalleLiveModal'
 import DirectCallModal from '../components/DirectCallModal'
 import RegisterSiteModal from '../components/RegisterSiteModal'
 import FortyGuardTelemetryModal from '../components/FortyGuardTelemetryModal'
-import type { Site, RiskLevel } from '../types'
+import type { Site, RiskLevel, MicroclimateAnalysis } from '../types'
 
 export default function Dashboard() {
   const [searchParams] = useSearchParams()
@@ -19,6 +20,8 @@ export default function Dashboard() {
   const [sites, setSites] = useState<Site[]>([])
   const [selectedSiteId, setSelectedSiteId] = useState<string>(urlSiteId || '')
   const [selectedSite, setSelectedSite] = useState<Site | null>(null)
+  const [microclimate, setMicroclimate] = useState<MicroclimateAnalysis | null>(null)
+  const [microLoading, setMicroLoading] = useState(false)
 
   // Autonomous Guardian State
   const [isSimulatingEmergency, setIsSimulatingEmergency] = useState(false)
@@ -51,13 +54,20 @@ export default function Dashboard() {
 
   useEffect(() => {
     setSelectedSite(sites.find((s) => s.id === selectedSiteId) ?? null)
+    if (selectedSiteId) {
+      setMicroLoading(true)
+      getMicroclimateAnalysis(selectedSiteId)
+        .then(setMicroclimate)
+        .catch(console.error)
+        .finally(() => setMicroLoading(false))
+    }
   }, [selectedSiteId, sites])
 
   const { snapshot, alerts, workers, loading } = useLiveHeat(selectedSiteId)
 
   // Use real snapshot data only — never show fake temperature numbers
-  const currentTempF: number | null = snapshot ? Math.round(snapshot.temperature_f * 10) / 10 : null
-  const riskLevel: RiskLevel = (snapshot?.risk_level as RiskLevel) ?? 'safe'
+  const currentTempF: number | null = snapshot ? Math.round(snapshot.temperature_f * 10) / 10 : (microclimate ? microclimate.ambient_temp_f : null)
+  const riskLevel: RiskLevel = (snapshot?.risk_level as RiskLevel) ?? (currentTempF && currentTempF >= 108 ? 'extreme' : 'elevated')
 
   // Manual trigger for live demo — calls real FortyGuard + CALL-E via backend
   async function handleEmergencySpikeToggle() {
@@ -138,6 +148,15 @@ export default function Dashboard() {
         {/* Action Controls & Emergency Injector */}
         <div className="flex items-center gap-2.5">
           <button
+            onClick={() => setShowTelemetryModal(true)}
+            className="px-3 py-1.5 rounded-xl bg-[#3F4E4F] hover:bg-[#A27B5C] text-white text-xs font-mono font-bold transition-all border border-[#3F4E4F] flex items-center gap-1.5"
+            title="Inspect verified FortyGuard API key credits, rate limits, and raw JSON response"
+          >
+            <span>🛰️</span>
+            <span>FortyGuard API Proof</span>
+          </button>
+
+          <button
             onClick={() => setShowRegisterSiteModal(true)}
             className="px-3 py-1.5 rounded-xl bg-[#3F4E4F] hover:bg-[#A27B5C] text-white text-xs font-mono font-bold transition-all border border-[#3F4E4F]"
           >
@@ -182,6 +201,9 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column (4 cols): Protected Workers & Auto-Safety Specs */}
         <div className="lg:col-span-4 flex flex-col space-y-4">
+          {/* FortyGuard Microclimate Intelligence Card */}
+          <MicroclimateTelemetryCard data={microclimate} loading={microLoading} />
+
           <div className="card-warm p-4 space-y-3">
             <div className="flex items-center justify-between border-b border-[#3F4E4F]/15 pb-2">
               <div className="font-mono">
@@ -193,7 +215,7 @@ export default function Dashboard() {
               </span>
             </div>
 
-            <div className="space-y-2 overflow-y-auto max-h-[340px] pr-1">
+            <div className="space-y-2 overflow-y-auto max-h-[260px] pr-1">
               {loading && <p className="text-xs text-[#3F4E4F] font-mono">Syncing active personnel...</p>}
               {workers.map((w) => (
                 <WorkerCard key={w.id} worker={w} />
@@ -213,7 +235,7 @@ export default function Dashboard() {
         {/* Center Column (5 cols): Live Geospatial Thermal Radar */}
         <div className="lg:col-span-5 flex flex-col space-y-4">
           <div className="card-warm p-2 shadow-lg flex-1 min-h-[500px] flex flex-col">
-            <HeatMap site={selectedSite} riskLevel={riskLevel} snapshot={snapshot} />
+            <HeatMap site={selectedSite} riskLevel={riskLevel} snapshot={snapshot} microclimate={microclimate} />
           </div>
         </div>
 
