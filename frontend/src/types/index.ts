@@ -93,17 +93,22 @@ export interface MicroclimateAnalysis {
 }
 
 export interface HourlyForecastPoint {
-    hour: string;
-    surface_temp_f: number;
-    air_temp_f: number;
-    refuge_temp_f: number;
-    wbgt_f?: number;
-    solar_radiation_w_m2: number;
-    hydration_liters_per_hour: number;
-    osha_schedule: '50/10' | '30/30' | '15/45' | 'Normal';
+  time_label: string
+  hour: number
+  ambient_temp_f: number
+  surface_temp_f: number
+  canopy_temp_f: number
+  wbgt_f: number
+  solar_radiation_w_m2: number
+  risk_level: string
+  work_rest_ratio: string
+  hydration_liters_per_hour: number
 }
 
 export interface HourlyForecastResponse {
-    site_id: string;
-    forecast: HourlyForecastPoint[];
+  site_id: string
+  site_name: string
+  peak_hour: string
+  peak_surface_temp_f: number
+  points: HourlyForecastPoint[]
 }

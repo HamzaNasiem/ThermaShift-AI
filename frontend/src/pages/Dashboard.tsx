@@ -64,7 +64,7 @@ export default function Dashboard() {
         .finally(() => setMicroLoading(false))
         
       getHourlyForecast(selectedSiteId)
-        .then((res) => setForecastData(res.forecast || []))
+        .then((res) => setForecastData(res.points || []))
         .catch(console.error)
     }
   }, [selectedSiteId, sites])

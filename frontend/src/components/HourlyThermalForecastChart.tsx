@@ -1,154 +1,213 @@
-import { useState } from 'react';
-import { HourlyForecastPoint } from '../types';
+import { useState } from 'react'
+import type { HourlyForecastPoint } from '../types'
 
 interface HourlyThermalForecastChartProps {
-  data: HourlyForecastPoint[];
+  data: HourlyForecastPoint[]
 }
 
 export function HourlyThermalForecastChart({ data }: HourlyThermalForecastChartProps) {
-  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null)
 
-  const width = 800;
-  const height = 300;
-  const margin = { top: 20, right: 30, bottom: 60, left: 50 };
+  if (!data || data.length === 0) {
+    return null
+  }
 
-  const innerWidth = width - margin.left - margin.right;
-  const innerHeight = height - margin.top - margin.bottom;
+  const width = 800
+  const height = 260
+  const margin = { top: 20, right: 30, bottom: 50, left: 45 }
 
-  // X scale: 0 to data.length - 1
-  // Y scale: minTemp - 5 to maxTemp + 5
-  
-  const allTemps = data.flatMap(d => [d.surface_temp_f, d.air_temp_f, d.refuge_temp_f]);
-  const maxTemp = Math.max(...allTemps, 130);
-  const minTemp = Math.min(...allTemps, 70);
+  const innerWidth = width - margin.left - margin.right
+  const innerHeight = height - margin.top - margin.bottom
 
-  const getX = (index: number) => margin.left + (index / (data.length - 1 || 1)) * innerWidth;
-  const getY = (temp: number) => margin.top + innerHeight - ((temp - minTemp) / (maxTemp - minTemp)) * innerHeight;
+  const allTemps = data.flatMap((d) => [d.surface_temp_f, d.ambient_temp_f, d.canopy_temp_f])
+  const maxTemp = Math.max(...allTemps, 130)
+  const minTemp = Math.min(...allTemps, 70)
 
-  const surfacePath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.surface_temp_f)}`).join(' ');
-  const airPath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.air_temp_f)}`).join(' ');
-  const refugePath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.refuge_temp_f)}`).join(' ');
+  const getX = (index: number) => margin.left + (index / (data.length - 1 || 1)) * innerWidth
+  const getY = (temp: number) => margin.top + innerHeight - ((temp - minTemp) / (maxTemp - minTemp)) * innerHeight
 
-  const getOshaColor = (schedule: string) => {
-    switch(schedule) {
-      case '15/45': return 'bg-red-900/50 text-red-300 border-red-700';
-      case '30/30': return 'bg-orange-900/50 text-orange-300 border-orange-700';
-      case '50/10': return 'bg-yellow-900/50 text-yellow-300 border-yellow-700';
-      default: return 'bg-green-900/50 text-green-300 border-green-700';
+  const surfacePath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.surface_temp_f)}`).join(' ')
+  const airPath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.ambient_temp_f)}`).join(' ')
+  const canopyPath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.canopy_temp_f)}`).join(' ')
+
+  const getOshaBadge = (ratio: string) => {
+    switch (ratio) {
+      case '15/45':
+        return 'bg-red-950/60 text-red-300 border-red-500/50'
+      case '30/30':
+        return 'bg-orange-950/60 text-orange-300 border-orange-500/50'
+      case '50/10':
+        return 'bg-yellow-950/60 text-yellow-300 border-yellow-500/50'
+      default:
+        return 'bg-emerald-950/60 text-emerald-300 border-emerald-500/50'
     }
-  };
+  }
 
   return (
-    <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-      <h3 className="text-xl font-bold text-white mb-6">Thermal Forecast & OSHA Schedules</h3>
-      
+    <div className="card-warm p-5 font-mono space-y-4 border-[#3F4E4F] shadow-2xl">
+      <div className="flex flex-wrap items-center justify-between border-b border-[#3F4E4F]/40 pb-3 gap-2">
+        <div>
+          <h3 className="text-sm font-bold text-white uppercase font-sans tracking-wide">
+            FortyGuard Diurnal Heat Curve & OSHA Shift Trajectory (09:00 - 18:00)
+          </h3>
+          <span className="text-[10px] text-[#A27B5C] font-semibold">
+            Hourly Asphalt Thermal Absorption vs Shaded Canopy Microclimate
+          </span>
+        </div>
+
+        {/* Legend */}
+        <div className="flex items-center gap-4 text-[10px]">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />
+            <span className="text-red-400 font-bold">Surface Asphalt</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" />
+            <span className="text-yellow-300 font-bold">Ambient Air</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
+            <span className="text-emerald-400 font-bold">Canopy Refuge</span>
+          </div>
+        </div>
+      </div>
+
       <div className="relative w-full overflow-x-auto">
-        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto min-w-[600px]">
-          {/* Y Axis */}
-          {[...Array(6)].map((_, i) => {
-            const temp = minTemp + (i / 5) * (maxTemp - minTemp);
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto min-w-[650px]">
+          {/* Y Axis Grid Lines */}
+          {[...Array(5)].map((_, i) => {
+            const temp = minTemp + (i / 4) * (maxTemp - minTemp)
             return (
               <g key={i}>
-                <line 
-                  x1={margin.left} y1={getY(temp)} 
-                  x2={width - margin.right} y2={getY(temp)} 
-                  stroke="#374151" strokeDasharray="4 4" 
+                <line
+                  x1={margin.left}
+                  y1={getY(temp)}
+                  x2={width - margin.right}
+                  y2={getY(temp)}
+                  stroke="#3F4E4F"
+                  strokeOpacity="0.4"
+                  strokeDasharray="3 3"
                 />
-                <text x={margin.left - 10} y={getY(temp)} fill="#9CA3AF" fontSize="12" textAnchor="end" dominantBaseline="middle">
+                <text
+                  x={margin.left - 8}
+                  y={getY(temp)}
+                  fill="#DCD7C9"
+                  opacity="0.6"
+                  fontSize="10"
+                  textAnchor="end"
+                  dominantBaseline="middle"
+                  fontFamily="monospace"
+                >
                   {Math.round(temp)}°F
                 </text>
               </g>
-            );
+            )
           })}
 
-          {/* Paths */}
-          <path d={surfacePath} fill="none" stroke="#EF4444" strokeWidth="3" />
-          <path d={airPath} fill="none" stroke="#F59E0B" strokeWidth="3" />
-          <path d={refugePath} fill="none" stroke="#10B981" strokeWidth="3" />
+          {/* Area Fill Gradient under Surface curve */}
+          <path
+            d={`${surfacePath} L ${getX(data.length - 1)} ${height - margin.bottom} L ${getX(0)} ${height - margin.bottom} Z`}
+            fill="rgba(239, 68, 68, 0.08)"
+          />
 
-          {/* Points & Interactions */}
+          {/* Spline Paths */}
+          <path d={surfacePath} fill="none" stroke="#EF4444" strokeWidth="2.5" />
+          <path d={airPath} fill="none" stroke="#F59E0B" strokeWidth="2.5" />
+          <path d={canopyPath} fill="none" stroke="#10B981" strokeWidth="2.5" />
+
+          {/* Points & Interactive Hover Columns */}
           {data.map((d, i) => (
-            <g 
-              key={i} 
+            <g
+              key={i}
               onMouseEnter={() => setHoverIdx(i)}
               onMouseLeave={() => setHoverIdx(null)}
               className="cursor-pointer"
             >
-              {/* Invisible interaction rect */}
-              <rect 
-                x={getX(i) - innerWidth / (data.length * 2)} 
-                y={margin.top} 
-                width={innerWidth / data.length} 
-                height={innerHeight} 
-                fill="transparent" 
+              <rect
+                x={getX(i) - innerWidth / (data.length * 2)}
+                y={margin.top}
+                width={innerWidth / data.length}
+                height={innerHeight}
+                fill="transparent"
               />
-              
+
               {hoverIdx === i && (
-                <line 
-                  x1={getX(i)} y1={margin.top} 
-                  x2={getX(i)} y2={height - margin.bottom} 
-                  stroke="#6B7280" strokeWidth="1" strokeDasharray="4 4"
+                <line
+                  x1={getX(i)}
+                  y1={margin.top}
+                  x2={getX(i)}
+                  y2={height - margin.bottom}
+                  stroke="#A27B5C"
+                  strokeWidth="1.5"
+                  strokeDasharray="4 4"
                 />
               )}
 
-              <circle cx={getX(i)} cy={getY(d.surface_temp_f)} r={hoverIdx === i ? 6 : 4} fill="#EF4444" />
-              <circle cx={getX(i)} cy={getY(d.air_temp_f)} r={hoverIdx === i ? 6 : 4} fill="#F59E0B" />
-              <circle cx={getX(i)} cy={getY(d.refuge_temp_f)} r={hoverIdx === i ? 6 : 4} fill="#10B981" />
+              <circle cx={getX(i)} cy={getY(d.surface_temp_f)} r={hoverIdx === i ? 5 : 3.5} fill="#EF4444" />
+              <circle cx={getX(i)} cy={getY(d.ambient_temp_f)} r={hoverIdx === i ? 5 : 3.5} fill="#F59E0B" />
+              <circle cx={getX(i)} cy={getY(d.canopy_temp_f)} r={hoverIdx === i ? 5 : 3.5} fill="#10B981" />
 
-              {/* X Axis Labels */}
-              <text x={getX(i)} y={height - margin.bottom + 20} fill="#9CA3AF" fontSize="12" textAnchor="middle">
-                {d.hour}
+              {/* X Axis Time Labels */}
+              <text
+                x={getX(i)}
+                y={height - margin.bottom + 18}
+                fill="#DCD7C9"
+                opacity="0.8"
+                fontSize="10"
+                textAnchor="middle"
+                fontFamily="monospace"
+              >
+                {d.time_label || `${d.hour}:00`}
               </text>
             </g>
           ))}
         </svg>
 
-        {/* Hover Tooltip */}
-        {hoverIdx !== null && (
-          <div 
-            className="absolute bg-gray-800 border border-gray-700 p-3 rounded-lg shadow-xl text-sm pointer-events-none z-10"
+        {/* Hover Tooltip Box */}
+        {hoverIdx !== null && data[hoverIdx] && (
+          <div
+            className="absolute bg-[#1A2224]/95 backdrop-blur-md border border-[#A27B5C] p-3 rounded-xl shadow-2xl text-xs text-[#DCD7C9] pointer-events-none z-10 space-y-1 w-56 font-mono"
             style={{
-              left: Math.min(Math.max(getX(hoverIdx) - 100, 0), width - 200) + 'px',
-              top: '20px'
+              left: Math.min(Math.max(getX(hoverIdx) - 100, 10), width - 240) + 'px',
+              top: '10px'
             }}
           >
-            <div className="font-bold text-white mb-2">{data[hoverIdx].hour} Details</div>
-            <div className="text-red-400">Surface: {data[hoverIdx].surface_temp_f}°F</div>
-            <div className="text-yellow-400">Air: {data[hoverIdx].air_temp_f}°F</div>
-            <div className="text-green-400">Refuge: {data[hoverIdx].refuge_temp_f}°F</div>
-            <div className="mt-2 text-gray-300 text-xs border-t border-gray-700 pt-2">
-              <div>Solar: {data[hoverIdx].solar_radiation_w_m2} W/m²</div>
-              <div>Hydration: {data[hoverIdx].hydration_liters_per_hour} L/hr</div>
+            <div className="font-bold text-white border-b border-[#3F4E4F] pb-1 flex justify-between">
+              <span>{data[hoverIdx].time_label}</span>
+              <span className="text-[#A27B5C] font-bold">OSHA: {data[hoverIdx].work_rest_ratio}</span>
+            </div>
+            <div className="text-red-400 flex justify-between">
+              <span>Ground Asphalt:</span>
+              <strong>{data[hoverIdx].surface_temp_f}°F</strong>
+            </div>
+            <div className="text-yellow-300 flex justify-between">
+              <span>Ambient Weather:</span>
+              <strong>{data[hoverIdx].ambient_temp_f}°F</strong>
+            </div>
+            <div className="text-emerald-400 flex justify-between">
+              <span>Shaded Canopy:</span>
+              <strong>{data[hoverIdx].canopy_temp_f}°F</strong>
+            </div>
+            <div className="pt-1 text-[10px] text-[#DCD7C9]/60 border-t border-[#3F4E4F]/40 flex justify-between">
+              <span>Solar: {data[hoverIdx].solar_radiation_w_m2} W/m²</span>
+              <span>Water: {data[hoverIdx].hydration_liters_per_hour} L/h</span>
             </div>
           </div>
         )}
       </div>
 
-      {/* OSHA Cards */}
-      <div className="mt-4 flex overflow-x-auto gap-2 pb-2 pl-[50px] pr-[30px]">
+      {/* Bottom OSHA Shift Schedule Badges */}
+      <div className="flex overflow-x-auto gap-2 pt-1">
         {data.map((d, i) => (
-          <div key={i} className="flex-1 min-w-[70px] text-center">
-            <div className={`text-xs font-semibold py-1 px-1 rounded border ${getOshaColor(d.osha_schedule)}`}>
-              {d.osha_schedule}
+          <div key={i} className="flex-1 min-w-[65px] text-center space-y-0.5">
+            <div className={`text-[10px] font-bold py-1 px-1 rounded-lg border ${getOshaBadge(d.work_rest_ratio)}`}>
+              {d.work_rest_ratio}
             </div>
+            <span className="text-[8px] text-[#DCD7C9]/50 block">{d.time_label}</span>
           </div>
         ))}
       </div>
-
-      <div className="mt-6 flex justify-center gap-6 text-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-red-500"></div>
-          <span className="text-gray-300">Surface Asphalt</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-          <span className="text-gray-300">Ambient Air</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-green-500"></div>
-          <span className="text-gray-300">Covered Refuge</span>
-        </div>
-      </div>
     </div>
-  );
+  )
 }
+
