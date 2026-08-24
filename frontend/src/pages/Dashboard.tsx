@@ -10,6 +10,8 @@ import CalleLiveModal from '../components/CalleLiveModal'
 import DirectCallModal from '../components/DirectCallModal'
 import RegisterSiteModal from '../components/RegisterSiteModal'
 import FortyGuardTelemetryModal from '../components/FortyGuardTelemetryModal'
+import OshaComplianceReportModal from '../components/OshaComplianceReportModal'
+import AudioVoicePlayer from '../components/AudioVoicePlayer'
 import { HourlyThermalForecastChart } from '../components/HourlyThermalForecastChart'
 import type { Site, RiskLevel, MicroclimateAnalysis, HourlyForecastPoint } from '../types'
 
@@ -34,6 +36,8 @@ export default function Dashboard() {
   const [showDirectCallModal, setShowDirectCallModal] = useState(false)
   const [showRegisterSiteModal, setShowRegisterSiteModal] = useState(false)
   const [showTelemetryModal, setShowTelemetryModal] = useState(false)
+  const [showOshaReportModal, setShowOshaReportModal] = useState(false)
+
 
   function loadSites() {
     getSites().then((data) => {
@@ -157,6 +161,15 @@ export default function Dashboard() {
           </button>
 
           <button
+            onClick={() => setShowOshaReportModal(true)}
+            className="px-3 py-1.5 rounded-xl bg-[#1A2224] hover:bg-[#3F4E4F] text-white text-xs font-mono font-bold transition-all border border-emerald-500/40 flex items-center gap-1.5"
+            title="Generate Official OSHA Heat Safety Compliance Audit Certificate"
+          >
+            <span>📑</span>
+            <span>OSHA Audit</span>
+          </button>
+
+          <button
             onClick={() => setShowDirectCallModal(true)}
             className="px-3 py-1.5 rounded-xl bg-[#1A2224] hover:bg-[#3F4E4F] text-white text-xs font-mono font-bold transition-all border border-[#A27B5C]/40 flex items-center gap-1.5"
           >
@@ -201,6 +214,16 @@ export default function Dashboard() {
             onBroadcastClick={handleEmergencySpikeToggle}
           />
 
+          {/* Browser Audio Voice Dispatch Preview */}
+          <AudioVoicePlayer
+            workerName={workers[0]?.name || 'Site Lead'}
+            siteName={selectedSite?.name || 'Heavy Industrial Work Site'}
+            surfaceTempF={microclimate?.surface_temp_f ?? 128.9}
+            refugeName={microclimate?.cooling_refuge || 'Zone D Shaded Canopy'}
+            reliefDeltaF={microclimate?.cooling_delta_f ?? 38.5}
+            language={workers[0]?.preferred_language || 'en'}
+          />
+
           {/* Active Workforce Roster */}
           <div className="card-warm p-4 space-y-3 font-mono">
             <div className="flex items-center justify-between border-b border-[#3F4E4F]/30 pb-2">
@@ -213,7 +236,7 @@ export default function Dashboard() {
               </span>
             </div>
 
-            <div className="space-y-2 overflow-y-auto max-h-[280px] pr-1">
+            <div className="space-y-2 overflow-y-auto max-h-[240px] pr-1">
               {loading && <p className="text-xs text-[#DCD7C9]/50 font-mono">Syncing personnel...</p>}
               {workers.map((w) => (
                 <WorkerCard key={w.id} worker={w} />
@@ -250,6 +273,17 @@ export default function Dashboard() {
       {/* Hourly Forecast Chart */}
       {forecastData.length > 0 && (
         <HourlyThermalForecastChart data={forecastData} />
+      )}
+
+      {/* OSHA & Legal Compliance Report Modal */}
+      {showOshaReportModal && (
+        <OshaComplianceReportModal
+          site={selectedSite}
+          microclimate={microclimate}
+          workers={workers}
+          alerts={alerts}
+          onClose={() => setShowOshaReportModal(false)}
+        />
       )}
 
       {/* CALL-E Live Call Tracker Modal */}
