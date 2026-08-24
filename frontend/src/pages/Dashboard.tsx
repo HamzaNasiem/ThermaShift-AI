@@ -5,7 +5,6 @@ import { useLiveHeat } from '../hooks/useLiveHeat'
 import HeatMap from '../components/HeatMap'
 import WorkerCard from '../components/WorkerCard'
 import AutonomousGuardianFeed from '../components/AutonomousGuardianFeed'
-import SafetyProtocolCard from '../components/SafetyProtocolCard'
 import MicroclimateTelemetryCard from '../components/MicroclimateTelemetryCard'
 import CalleLiveModal from '../components/CalleLiveModal'
 import DirectCallModal from '../components/DirectCallModal'
@@ -97,30 +96,25 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Top Executive Autonomous HUD */}
-      <div className="bg-[#2C3639] text-[#DCD7C9] border border-[#3F4E4F] rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-xl">
-        <div className="flex flex-wrap items-center gap-5">
+      <div className="bg-[#242D30] text-[#DCD7C9] border border-[#3F4E4F] rounded-2xl p-3.5 flex flex-wrap items-center justify-between gap-4 shadow-xl">
+        <div className="flex flex-wrap items-center gap-4">
           {/* Autonomous Status Badge */}
-          <div className="flex items-center gap-2.5 bg-[#3F4E4F]/70 px-3.5 py-1.5 rounded-xl border border-[#A27B5C]/40">
+          <div className="flex items-center gap-2 bg-[#1A2224] px-3 py-1.5 rounded-xl border border-emerald-500/40">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-            <div className="font-mono">
-              <span className="text-xs font-bold text-white uppercase block leading-none">
-                Autonomous AI Watchdog Active
-              </span>
-              <span className="text-[9px] text-[#A27B5C] font-semibold uppercase">
-                Continuous 24/7 Heat-Safety Guardian
-              </span>
-            </div>
+            <span className="text-xs font-bold text-white font-mono uppercase tracking-wide">
+              Autonomous AI Guardian Active
+            </span>
           </div>
 
           <div className="h-6 w-px bg-[#3F4E4F] hidden md:block" />
 
           {/* Active Worksite Selector */}
           <div className="flex items-center gap-2 font-mono text-xs">
-            <span className="text-[#DCD7C9]/60 text-[11px]">Monitoring:</span>
+            <span className="text-[#DCD7C9]/60 text-[11px]">Site:</span>
             <select
               value={selectedSiteId}
               onChange={(e) => setSelectedSiteId(e.target.value)}
-              className="bg-[#3F4E4F] border border-[#A27B5C]/50 text-white rounded-xl px-3 py-1.5 text-xs font-mono font-bold focus:outline-none focus:border-[#A27B5C] cursor-pointer"
+              className="bg-[#1A2224] border border-[#A27B5C]/50 text-white rounded-xl px-3 py-1.5 text-xs font-mono font-bold focus:outline-none focus:border-[#A27B5C] cursor-pointer"
             >
               {sites.map((s) => (
                 <option key={s.id} value={s.id}>📍 {s.name}</option>
@@ -146,45 +140,38 @@ export default function Dashboard() {
           ) : (
             <div className="flex items-center gap-2 font-mono text-xs text-[#DCD7C9]/40">
               <span className="w-2 h-2 rounded-full bg-[#A27B5C]/40 animate-pulse" />
-              Awaiting FortyGuard scan...
+              Syncing FortyGuard...
             </div>
           )}
         </div>
 
         {/* Action Controls & Emergency Injector */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setShowTelemetryModal(true)}
-            className="px-3 py-1.5 rounded-xl bg-[#3F4E4F] hover:bg-[#A27B5C] text-white text-xs font-mono font-bold transition-all border border-[#3F4E4F] flex items-center gap-1.5"
-            title="Inspect verified FortyGuard API key credits, rate limits, and raw JSON response"
+            className="px-3 py-1.5 rounded-xl bg-[#1A2224] hover:bg-[#3F4E4F] text-white text-xs font-mono font-bold transition-all border border-[#3F4E4F] flex items-center gap-1.5"
+            title="Inspect verified FortyGuard API key credits & raw response"
           >
             <span>🛰️</span>
-            <span>FortyGuard API Proof</span>
-          </button>
-
-          <button
-            onClick={() => setShowRegisterSiteModal(true)}
-            className="px-3 py-1.5 rounded-xl bg-[#3F4E4F] hover:bg-[#A27B5C] text-white text-xs font-mono font-bold transition-all border border-[#3F4E4F]"
-          >
-            ➕ Pinpoint Site
+            <span>FortyGuard Proof</span>
           </button>
 
           <button
             onClick={() => setShowDirectCallModal(true)}
-            className="px-3 py-1.5 rounded-xl bg-[#3F4E4F] hover:bg-[#A27B5C] text-white text-xs font-mono font-bold transition-all border border-[#A27B5C]/40 flex items-center gap-1.5"
+            className="px-3 py-1.5 rounded-xl bg-[#1A2224] hover:bg-[#3F4E4F] text-white text-xs font-mono font-bold transition-all border border-[#A27B5C]/40 flex items-center gap-1.5"
           >
             <span>📱</span>
-            <span>Call My Phone (CALL-E)</span>
+            <span>Direct Call (CALL-E)</span>
           </button>
 
           <button
             onClick={handleEmergencySpikeToggle}
             disabled={isSimulatingEmergency || !selectedSiteId}
             className="px-3.5 py-1.5 rounded-xl bg-red-800 hover:bg-red-700 disabled:opacity-60 text-white text-xs font-mono font-bold transition-all shadow-md flex items-center gap-1.5"
-            title="Triggers a real heat check + dispatches real CALL-E calls to enrolled workers"
+            title="Simulate extreme heat emergency and dispatch real CALL-E phone calls"
           >
             <span>⚡</span>
-            <span>{isSimulatingEmergency ? 'AI Auto-Dispatching...' : 'Test AI Emergency Response'}</span>
+            <span>{isSimulatingEmergency ? 'AI Auto-Calling...' : 'Test Emergency Dispatch'}</span>
           </button>
         </div>
       </div>
@@ -205,37 +192,39 @@ export default function Dashboard() {
 
       {/* Main 3-Column Autonomous Command Center */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column (4 cols): Protected Workers & Auto-Safety Specs */}
+        {/* Left Column (4 cols): Thermal Intelligence & Protected Workforce */}
         <div className="lg:col-span-4 flex flex-col space-y-4">
           {/* FortyGuard Microclimate Intelligence Card */}
-          <MicroclimateTelemetryCard data={microclimate} loading={microLoading} />
+          <MicroclimateTelemetryCard 
+            data={microclimate} 
+            loading={microLoading} 
+            onBroadcastClick={handleEmergencySpikeToggle}
+          />
 
-          <div className="card-warm p-4 space-y-3">
-            <div className="flex items-center justify-between border-b border-[#3F4E4F]/15 pb-2">
-              <div className="font-mono">
-                <h3 className="text-xs font-bold text-[#2C3639] uppercase">Protected Field Workforce</h3>
+          {/* Active Workforce Roster */}
+          <div className="card-warm p-4 space-y-3 font-mono">
+            <div className="flex items-center justify-between border-b border-[#3F4E4F]/30 pb-2">
+              <div>
+                <h3 className="text-xs font-bold text-white uppercase">Protected Field Workforce</h3>
                 <span className="text-[10px] text-[#A27B5C] font-semibold">Autonomous Emergency Coverage</span>
               </div>
-              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-[#2C3639] text-[#DCD7C9]">
+              <span className="text-xs font-bold px-2 py-0.5 rounded bg-[#1A2224] text-emerald-400 border border-emerald-500/30">
                 {workers.length} On Duty
               </span>
             </div>
 
-            <div className="space-y-2 overflow-y-auto max-h-[260px] pr-1">
-              {loading && <p className="text-xs text-[#3F4E4F] font-mono">Syncing active personnel...</p>}
+            <div className="space-y-2 overflow-y-auto max-h-[280px] pr-1">
+              {loading && <p className="text-xs text-[#DCD7C9]/50 font-mono">Syncing personnel...</p>}
               {workers.map((w) => (
                 <WorkerCard key={w.id} worker={w} />
               ))}
               {!loading && workers.length === 0 && (
-                <p className="text-xs text-[#3F4E4F] font-mono text-center py-6">
-                  No workers enrolled. Go to Field Workers tab to add workers.
+                <p className="text-xs text-[#DCD7C9]/40 font-mono text-center py-4">
+                  No workers enrolled on this site.
                 </p>
               )}
             </div>
           </div>
-
-          {/* Autonomous Protocol Banner */}
-          <SafetyProtocolCard temperatureF={currentTempF ?? 70} riskLevel={riskLevel} />
         </div>
 
         {/* Center Column (5 cols): Live Geospatial Thermal Radar */}
