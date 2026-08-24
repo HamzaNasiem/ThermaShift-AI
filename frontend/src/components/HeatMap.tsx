@@ -62,39 +62,55 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
 
   // Initialize Map
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return
+    if (!containerRef.current) return
 
-    mapRef.current = L.map(containerRef.current, {
-      center: [24.3312, 54.4921],
-      zoom: 15,
-      zoomControl: false,
-      attributionControl: false,
-    })
+    try {
+      if ((containerRef.current as any)._leaflet_id) {
+        delete (containerRef.current as any)._leaflet_id
+      }
+      if (mapRef.current) {
+        mapRef.current.remove()
+        mapRef.current = null
+      }
 
-    L.control.zoom({ position: 'topleft' }).addTo(mapRef.current)
-
-    tileLayerRef.current = L.tileLayer(BASEMAP_TILES.carto_dark.url, {
-      maxZoom: 19,
-    }).addTo(mapRef.current)
-
-    layerGroupRef.current = L.layerGroup().addTo(mapRef.current)
-    vectorLayerRef.current = L.layerGroup().addTo(mapRef.current)
-    shelterLayerRef.current = L.layerGroup().addTo(mapRef.current)
-
-    mapRef.current.on('mousemove', (e) => {
-      setCursorCoords({
-        lat: e.latlng.lat.toFixed(4),
-        lng: e.latlng.lng.toFixed(4),
+      mapRef.current = L.map(containerRef.current, {
+        center: [24.3312, 54.4921],
+        zoom: 15,
+        zoomControl: false,
+        attributionControl: false,
       })
-    })
 
-    mapRef.current.on('mouseout', () => {
-      setCursorCoords(null)
-    })
+      L.control.zoom({ position: 'topleft' }).addTo(mapRef.current)
+
+      tileLayerRef.current = L.tileLayer(BASEMAP_TILES.carto_dark.url, {
+        maxZoom: 19,
+      }).addTo(mapRef.current)
+
+      layerGroupRef.current = L.layerGroup().addTo(mapRef.current)
+      vectorLayerRef.current = L.layerGroup().addTo(mapRef.current)
+      shelterLayerRef.current = L.layerGroup().addTo(mapRef.current)
+
+      mapRef.current.on('mousemove', (e) => {
+        setCursorCoords({
+          lat: e.latlng.lat.toFixed(4),
+          lng: e.latlng.lng.toFixed(4),
+        })
+      })
+
+      mapRef.current.on('mouseout', () => {
+        setCursorCoords(null)
+      })
+    } catch (err) {
+      console.warn('Leaflet map initialization notice:', err)
+    }
 
     return () => {
-      mapRef.current?.remove()
-      mapRef.current = null
+      try {
+        mapRef.current?.remove()
+        mapRef.current = null
+      } catch (err) {
+        console.warn('Leaflet cleanup notice:', err)
+      }
     }
   }, [])
 
