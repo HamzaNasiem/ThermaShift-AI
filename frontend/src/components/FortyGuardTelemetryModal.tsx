@@ -65,12 +65,17 @@ export default function FortyGuardTelemetryModal({
             <span className="text-[10px] text-[#DCD7C9]/60 block mb-1">Live Credit Counter</span>
             <div className="flex items-end justify-between mb-1">
               <span className="font-bold text-[#A27B5C] text-lg">
-                {usageData?.credit_summary?.total_remaining_credits?.toLocaleString() || '1,378,080'}
+                {(usageData?.credit_summary?.total_remaining_credits ?? 1002500).toLocaleString()}
               </span>
-              <span className="text-[10px] text-[#DCD7C9]/40">/ 2,000,000</span>
+              <span className="text-[10px] text-[#DCD7C9]/40">/ {(usageData?.credit_summary?.total_available_credits ?? 2000000).toLocaleString()}</span>
             </div>
             <div className="w-full bg-[#1A2224] rounded-full h-1.5">
-              <div className="bg-[#A27B5C] h-1.5 rounded-full shadow-[0_0_10px_#A27B5C]" style={{ width: '68.9%' }}></div>
+              <div
+                className="bg-[#A27B5C] h-1.5 rounded-full shadow-[0_0_10px_#A27B5C]"
+                style={{
+                  width: `${Math.min(100, Math.max(5, Math.round(((usageData?.credit_summary?.total_remaining_credits ?? 1002500) / (usageData?.credit_summary?.total_available_credits ?? 2000000)) * 100)))}%`
+                }}
+              ></div>
             </div>
           </div>
           <div className="bg-[#242D30] p-3 rounded-xl border border-[#3F4E4F]">
