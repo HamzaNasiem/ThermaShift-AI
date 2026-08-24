@@ -159,181 +159,200 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
   useEffect(() => {
     if (!mapRef.current || !layerGroupRef.current || !site?.polygon_geojson?.coordinates?.[0]) return
 
-    layerGroupRef.current.clearLayers()
-    vectorLayerRef.current?.clearLayers()
-    shelterLayerRef.current?.clearLayers()
+    try {
+      layerGroupRef.current.clearLayers()
+      vectorLayerRef.current?.clearLayers()
+      shelterLayerRef.current?.clearLayers()
 
-    const coords = site.polygon_geojson.coordinates[0]
-    const lats = coords.map((c: number[]) => c[1])
-    const lngs = coords.map((c: number[]) => c[0])
-    const minLat = Math.min(...lats)
-    const maxLat = Math.max(...lats)
-    const minLng = Math.min(...lngs)
-    const maxLng = Math.max(...lngs)
+      const coords = site.polygon_geojson.coordinates[0]
+      if (!Array.isArray(coords) || coords.length < 3) return
 
-    const baseTempF = snapshot ? snapshot.temperature_f : (microclimate?.ambient_temp_f ?? 98.0)
+      const lats = coords.map((c: number[]) => c[1])
+      const lngs = coords.map((c: number[]) => c[0])
+      const minLat = Math.min(...lats)
+      const maxLat = Math.max(...lats)
+      const minLng = Math.min(...lngs)
+      const maxLng = Math.max(...lngs)
 
-    const rows = 6
-    const cols = 6
-    const dLat = (maxLat - minLat) / rows
-    const dLng = (maxLng - minLng) / cols
+      const baseTempF = snapshot ? snapshot.temperature_f : (microclimate?.ambient_temp_f ?? 98.0)
 
-    const bounds = L.latLngBounds(coords.map((c: number[]) => [c[1], c[0]] as L.LatLngTuple))
+      const rows = 6
+      const cols = 6
+      const dLat = (maxLat - minLat) / rows
+      const dLng = (maxLng - minLng) / cols
 
-    let hotspotCoords: L.LatLngTuple | null = null
-    let refugeCoords: L.LatLngTuple | null = null
+      const bounds = L.latLngBounds(coords.map((c: number[]) => [c[1], c[0]] as L.LatLngTuple))
 
-    if (showThermalGrid) {
-      let cellIndex = 0
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const cMinLat = minLat + r * dLat
-          const cMaxLat = cMinLat + dLat
-          const cMinLng = minLng + c * dLng
-          const cMaxLng = cMinLng + dLng
+      let hotspotCoords: L.LatLngTuple | null = null
+      let refugeCoords: L.LatLngTuple | null = null
 
-          const mcell = microclimate?.microcells?.[cellIndex]
-          
-          let surfaceType = 'asphalt'
-          if (r >= 4 && c >= 4) surfaceType = 'shaded_canopy'
-          else if (r === 3) surfaceType = 'green_buffer'
-          else if (c === 3) surfaceType = 'concrete'
+      if (showThermalGrid) {
+        let cellIndex = 0
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const cMinLat = minLat + r * dLat
+            const cMaxLat = cMinLat + dLat
+            const cMinLng = minLng + c * dLng
+            const cMaxLng = cMinLng + dLng
 
-          surfaceType = mcell ? mcell.surface_type : surfaceType
+            const mcell = microclimate?.microcells?.[cellIndex]
+            
+            let surfaceType = 'asphalt'
+            if (r >= 4 && c >= 4) surfaceType = 'shaded_canopy'
+            else if (r === 3) surfaceType = 'green_buffer'
+            else if (c === 3) surfaceType = 'concrete'
 
-          const isCanopy = surfaceType === 'shaded_canopy'
-          const isHotspot = mcell ? mcell.is_hotspot : (r === 0 && c === 0)
+            surfaceType = mcell ? mcell.surface_type : surfaceType
 
-          const cellAirTempF = mcell ? mcell.temp_f : Math.round((baseTempF + (2 - r) * 1.5 - (isCanopy ? 14.0 : 0)) * 10) / 10
-          const cellSurfaceTempF = mcell ? mcell.surface_temp_f : Math.round((cellAirTempF + (surfaceType === 'asphalt' ? 18.5 : isCanopy ? -12.0 : 4.0)) * 10) / 10
-          const cellTempC = Math.round(((cellAirTempF - 32) * 5) / 9 * 10) / 10
-          const solarRad = mcell ? mcell.solar_radiation_w_m2 : (isCanopy ? 110 : 860)
+            const isCanopy = surfaceType === 'shaded_canopy'
+            const isHotspot = mcell ? mcell.is_hotspot : (r === 0 && c === 0)
 
-          const displayTemp = showContrastMode ? cellSurfaceTempF : cellAirTempF
-          const style = getMicrocellStyle(displayTemp, surfaceType, showContrastMode)
+            const cellAirTempF = mcell ? mcell.temp_f : Math.round((baseTempF + (2 - r) * 1.5 - (isCanopy ? 14.0 : 0)) * 10) / 10
+            const cellSurfaceTempF = mcell ? mcell.surface_temp_f : Math.round((cellAirTempF + (surfaceType === 'asphalt' ? 18.5 : isCanopy ? -12.0 : 4.0)) * 10) / 10
+            const cellTempC = Math.round(((cellAirTempF - 32) * 5) / 9 * 10) / 10
+            const solarRad = mcell ? mcell.solar_radiation_w_m2 : (isCanopy ? 110 : 860)
 
-          const tileCoords: L.LatLngTuple[] = [
-            [cMinLat, cMinLng],
-            [cMinLat, cMaxLng],
-            [cMaxLat, cMaxLng],
-            [cMaxLat, cMinLng],
-          ]
+            const displayTemp = showContrastMode ? cellSurfaceTempF : cellAirTempF
+            const style = getMicrocellStyle(displayTemp, surfaceType, showContrastMode)
 
-          const centerLat = (cMinLat + cMaxLat) / 2
-          const centerLng = (cMinLng + cMaxLng) / 2
+            const tileCoords: L.LatLngTuple[] = [
+              [cMinLat, cMinLng],
+              [cMinLat, cMaxLng],
+              [cMaxLat, cMaxLng],
+              [cMaxLat, cMinLng],
+            ]
 
-          if (isHotspot) hotspotCoords = [centerLat, centerLng]
-          if (isCanopy && !refugeCoords) refugeCoords = [centerLat, centerLng]
+            const centerLat = (cMinLat + cMaxLat) / 2
+            const centerLng = (cMinLng + cMaxLng) / 2
 
-          // Filter Logic
-          let renderCell = false
-          if (zoneFilter === 'all') renderCell = true
-          if (zoneFilter === 'hotspots' && isHotspot) renderCell = true
-          if (zoneFilter === 'shelters' && isCanopy) renderCell = true
+            if (isHotspot) hotspotCoords = [centerLat, centerLng]
+            if (isCanopy && !refugeCoords) refugeCoords = [centerLat, centerLng]
 
-          if (renderCell) {
-            const poly = L.polygon(tileCoords, {
-              color: isHotspot ? '#EF4444' : isCanopy ? '#34D399' : style.stroke,
-              fillColor: style.hex,
-              fillOpacity: isCanopy ? 0.85 : isHotspot ? 0.88 : style.opacity,
-              weight: isHotspot || isCanopy ? 2.5 : style.weight,
-              opacity: 0.95,
-            })
+            // Filter Logic
+            let renderCell = false
+            if (zoneFilter === 'all') renderCell = true
+            if (zoneFilter === 'hotspots' && isHotspot) renderCell = true
+            if (zoneFilter === 'shelters' && isCanopy) renderCell = true
 
-            poly.on('mouseover', () => {
-              poly.setStyle({ fillOpacity: 0.98, weight: 3, color: '#FFFFFF' })
-              setSelectedCell({
-                id: mcell ? mcell.id : `FG-${101 + cellIndex}`,
-                airTempF: cellAirTempF,
-                surfaceTempF: cellSurfaceTempF,
-                tempC: cellTempC,
-                surfaceType: surfaceType === 'shaded_canopy' ? 'Covered Canopy Shade' : surfaceType === 'asphalt' ? 'Unshaded Heavy Asphalt' : 'Compacted Slab / Soil',
-                solarExposure: isCanopy ? `Full Canopy Protection (${solarRad} W/m²)` : `Direct Solar Load (${solarRad} W/m²)`,
-                isHotspot,
-                isCanopy,
-                oshaWorkRest: cellAirTempF >= 105 ? '15 min Work / 45 min Rest' : cellAirTempF >= 98 ? '30 min Work / 30 min Rest' : '50 min Work / 10 min Rest',
-              })
-            })
-
-            poly.on('mouseout', () => {
-              poly.setStyle({
+            if (renderCell) {
+              const poly = L.polygon(tileCoords, {
+                color: isHotspot ? '#EF4444' : isCanopy ? '#34D399' : style.stroke,
+                fillColor: style.hex,
                 fillOpacity: isCanopy ? 0.85 : isHotspot ? 0.88 : style.opacity,
                 weight: isHotspot || isCanopy ? 2.5 : style.weight,
-                color: isHotspot ? '#EF4444' : isCanopy ? '#34D399' : style.stroke,
+                opacity: 0.95,
               })
-            })
 
-            poly.addTo(layerGroupRef.current!)
+              poly.on('mouseover', () => {
+                poly.setStyle({ fillOpacity: 0.98, weight: 3, color: '#FFFFFF' })
+                setSelectedCell({
+                  id: mcell ? mcell.id : `FG-${101 + cellIndex}`,
+                  airTempF: cellAirTempF,
+                  surfaceTempF: cellSurfaceTempF,
+                  tempC: cellTempC,
+                  surfaceType: surfaceType === 'shaded_canopy' ? 'Covered Canopy Shade' : surfaceType === 'asphalt' ? 'Unshaded Heavy Asphalt' : 'Compacted Slab / Soil',
+                  solarExposure: isCanopy ? `Full Canopy Protection (${solarRad} W/m²)` : `Direct Solar Load (${solarRad} W/m²)`,
+                  isHotspot,
+                  isCanopy,
+                  oshaWorkRest: cellAirTempF >= 105 ? '15 min Work / 45 min Rest' : cellAirTempF >= 98 ? '30 min Work / 30 min Rest' : '50 min Work / 10 min Rest',
+                })
+              })
+
+              poly.on('mouseout', () => {
+                poly.setStyle({
+                  fillOpacity: isCanopy ? 0.85 : isHotspot ? 0.88 : style.opacity,
+                  weight: isHotspot || isCanopy ? 2.5 : style.weight,
+                  color: isHotspot ? '#EF4444' : isCanopy ? '#34D399' : style.stroke,
+                })
+              })
+
+              poly.addTo(layerGroupRef.current!)
+            }
+            cellIndex++
           }
-          cellIndex++
         }
       }
-    }
 
-    // Outer Boundary Dash
-    const outerPoly = L.polygon(coords.map((c: number[]) => [c[1], c[0]] as L.LatLngTuple), {
-      color: '#A27B5C',
-      weight: 2.5,
-      fillColor: 'transparent',
-      dashArray: '6 4',
-    })
-    outerPoly.addTo(layerGroupRef.current!)
-
-    // Shaded Canopy Overlays
-    if (showShelters && refugeCoords && shelterLayerRef.current) {
-      const shelterIcon = L.divIcon({
-        className: 'shelter-pin',
-        html: `<div style="background:#059669; border: 2px solid #34D399; color:white; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; box-shadow:0 0 10px #059669;">🛡️</div>`,
-        iconSize: [28, 28],
-        iconAnchor: [14, 14],
+      // Outer Boundary Dash
+      const outerPoly = L.polygon(coords.map((c: number[]) => [c[1], c[0]] as L.LatLngTuple), {
+        color: '#A27B5C',
+        weight: 2.5,
+        fillColor: 'transparent',
+        dashArray: '6 4',
       })
-      L.marker(refugeCoords, { icon: shelterIcon }).addTo(shelterLayerRef.current)
+      outerPoly.addTo(layerGroupRef.current!)
+
+      // Shaded Canopy Overlays
+      if (showShelters && refugeCoords && shelterLayerRef.current) {
+        const shelterIcon = L.divIcon({
+          className: 'shelter-pin',
+          html: `<div style="background:#059669; border: 2px solid #34D399; color:white; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; box-shadow:0 0 10px #059669;">🛡️</div>`,
+          iconSize: [28, 28],
+          iconAnchor: [14, 14],
+        })
+        L.marker(refugeCoords, { icon: shelterIcon }).addTo(shelterLayerRef.current)
+      }
+
+      // Draw Animated ThermaShift Relocation Vector
+      if (showEscapeVector && hotspotCoords && refugeCoords && vectorLayerRef.current) {
+        const escapeLine = L.polyline([hotspotCoords, refugeCoords], {
+          color: '#10B981',
+          weight: 4,
+          dashArray: '8 8',
+          className: 'glowing-dash-path',
+        })
+        escapeLine.addTo(vectorLayerRef.current)
+
+        // Start Marker (Critical Hotspot Pulse)
+        L.circleMarker(hotspotCoords, {
+          radius: 7,
+          fillColor: '#DC2626',
+          color: '#FFFFFF',
+          weight: 2,
+          fillOpacity: 0.95,
+        }).addTo(vectorLayerRef.current)
+
+        // Target Marker (Cooling Refuge Canopy)
+        L.circleMarker(refugeCoords, {
+          radius: 8,
+          fillColor: '#059669',
+          color: '#FFFFFF',
+          weight: 2,
+          fillOpacity: 0.95,
+        }).addTo(vectorLayerRef.current)
+
+        // Floating Badge on vector midpoint
+        const midLat = (hotspotCoords[0] + refugeCoords[0]) / 2
+        const midLng = (hotspotCoords[1] + refugeCoords[1]) / 2
+        const reliefTemp = microclimate?.cooling_delta_f ?? 38.5
+        let distance = microclimate?.recommended_shift_distance_m
+        if (!distance && mapRef.current) {
+          try {
+            distance = Math.round(mapRef.current.distance(hotspotCoords, refugeCoords))
+          } catch {
+            distance = 500
+          }
+        }
+
+        const tagIcon = L.divIcon({
+          className: 'vector-tag-container',
+          html: `<div class="vector-tag-badge">⚡ ThermaShift: -${reliefTemp}°F Relief (${distance || 500}m)</div>`,
+          iconSize: [220, 26],
+          iconAnchor: [110, 13]
+        })
+        L.marker([midLat, midLng], { icon: tagIcon }).addTo(vectorLayerRef.current)
+      }
+
+      if (bounds && bounds.isValid() && mapRef.current) {
+        try {
+          mapRef.current.fitBounds(bounds, { padding: [30, 30], maxZoom: 16 })
+        } catch {
+          // Ignore fitBounds animation interruptions
+        }
+      }
+    } catch (err) {
+      console.warn('HeatMap render error handled:', err)
     }
-
-    // Draw Animated ThermaShift Relocation Vector
-    if (showEscapeVector && hotspotCoords && refugeCoords && vectorLayerRef.current) {
-      const escapeLine = L.polyline([hotspotCoords, refugeCoords], {
-        color: '#10B981',
-        weight: 4,
-        dashArray: '8 8',
-        className: 'glowing-dash-path',
-      })
-      escapeLine.addTo(vectorLayerRef.current)
-
-      // Start Marker (Critical Hotspot Pulse)
-      L.circleMarker(hotspotCoords, {
-        radius: 7,
-        fillColor: '#DC2626',
-        color: '#FFFFFF',
-        weight: 2,
-        fillOpacity: 0.95,
-      }).addTo(vectorLayerRef.current)
-
-      // Target Marker (Cooling Refuge Canopy)
-      L.circleMarker(refugeCoords, {
-        radius: 8,
-        fillColor: '#059669',
-        color: '#FFFFFF',
-        weight: 2,
-        fillOpacity: 0.95,
-      }).addTo(vectorLayerRef.current)
-
-      // Floating Badge on vector midpoint
-      const midLat = (hotspotCoords[0] + refugeCoords[0]) / 2
-      const midLng = (hotspotCoords[1] + refugeCoords[1]) / 2
-      const reliefTemp = microclimate?.cooling_delta_f ?? 38.5
-      const distance = microclimate?.recommended_shift_distance_m ?? Math.round(mapRef.current.distance(hotspotCoords, refugeCoords))
-
-      const tagIcon = L.divIcon({
-        className: 'vector-tag-container',
-        html: `<div class="vector-tag-badge">⚡ ThermaShift: -${reliefTemp}°F Relief (${distance}m)</div>`,
-        iconSize: [220, 26],
-        iconAnchor: [110, 13]
-      })
-      L.marker([midLat, midLng], { icon: tagIcon }).addTo(vectorLayerRef.current)
-    }
-
-    mapRef.current.flyToBounds(bounds, { padding: [40, 40], duration: 1.0 })
   }, [site, riskLevel, snapshot, microclimate, showThermalGrid, showContrastMode, showEscapeVector, showShelters, zoneFilter])
 
   return (

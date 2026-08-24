@@ -24,7 +24,7 @@ export function HourlyThermalForecastChart({ data }: HourlyThermalForecastChartP
   const minTemp = Math.min(...allTemps, 70)
 
   const getX = (index: number) => margin.left + (index / (data.length - 1 || 1)) * innerWidth
-  const getY = (temp: number) => margin.top + innerHeight - ((temp - minTemp) / (maxTemp - minTemp)) * innerHeight
+  const getY = (temp: number) => margin.top + innerHeight - ((temp - minTemp) / (maxTemp - minTemp || 1)) * innerHeight
 
   const surfacePath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.surface_temp_f)}`).join(' ')
   const airPath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.ambient_temp_f)}`).join(' ')

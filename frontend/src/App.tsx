@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-do
 import Dashboard from './pages/Dashboard'
 import Sites from './pages/Sites'
 import Workers from './pages/Workers'
+import ErrorBoundary from './components/ErrorBoundary'
 
 function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
   const location = useLocation()
@@ -59,13 +60,16 @@ export default function App() {
       <div className="min-h-screen bg-[#1A2224] text-[#DCD7C9] flex flex-col font-sans">
         <Header />
         <main className="flex-1 max-w-[1600px] w-full mx-auto px-6 py-6">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/sites" element={<Sites />} />
-            <Route path="/workers" element={<Workers />} />
-          </Routes>
+          <ErrorBoundary fallbackTitle="Application Error">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/sites" element={<Sites />} />
+              <Route path="/workers" element={<Workers />} />
+            </Routes>
+          </ErrorBoundary>
         </main>
       </div>
     </BrowserRouter>
   )
 }
+
