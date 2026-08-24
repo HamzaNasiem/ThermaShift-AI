@@ -1,8 +1,8 @@
-"""Background poller: runs per-site heat checks on a configurable interval."""
+"""Background poller: runs per-site heat checks with strict credit protection and DB caching."""
 
 import asyncio
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from sqlalchemy import select
 from app.core.database import AsyncSessionLocal
@@ -14,12 +14,28 @@ from app.models.heat_snapshot import HeatSnapshot
 
 logger = logging.getLogger(__name__)
 
+# CREDIT PROTECTION: Do not re-poll FortyGuard if a snapshot exists within the last 4 hours
+CACHE_TTL_HOURS = 4
+
 
 async def _check_site(site: Site) -> None:
-    """Fetch temperature for one site, classify risk, dispatch alerts if needed."""
+    """Fetch temperature for one site only if no recent cached snapshot exists."""
     async with AsyncSessionLocal() as db:
         try:
-            logger.info(f"Polling site {site.id} ({site.name})")
+            # Check DB cache first to protect FortyGuard API credits
+            cutoff = datetime.now(timezone.utc) - timedelta(hours=CACHE_TTL_HOURS)
+            snap_res = await db.execute(
+                select(HeatSnapshot)
+                .where(HeatSnapshot.site_id == site.id, HeatSnapshot.captured_at >= cutoff)
+                .order_by(HeatSnapshot.captured_at.desc())
+                .limit(1)
+            )
+            existing = snap_res.scalar_one_or_none()
+            if existing:
+                logger.info(f"Site {site.name} ({site.id}) has fresh snapshot ({existing.temperature_f}°F, {existing.captured_at}). Skipping API call to conserve credits.")
+                return
+
+            logger.info(f"Polling FortyGuard API for site {site.id} ({site.name})")
             raw = await fortyguard.get_site_temperature(site.polygon_geojson)
             temp_f = fortyguard.extract_temperature(raw)
             level = risk_engine.classify_risk(
@@ -46,18 +62,21 @@ async def _check_site(site: Site) -> None:
 
 
 async def poll_loop() -> None:
-    """Continuous asyncio loop that polls all sites at their configured intervals."""
-    logger.info("Background poller started")
+    """Poller loop with credit protection — sleeps for 60 minutes between cycles."""
+    logger.info("Background poller initialized with Credit-Protection Caching enabled")
     while True:
         try:
             async with AsyncSessionLocal() as db:
                 result = await db.execute(select(Site))
                 sites = result.scalars().all()
 
-            tasks = [_check_site(site) for site in sites]
-            if tasks:
-                await asyncio.gather(*tasks, return_exceptions=True)
+            for site in sites:
+                await _check_site(site)
+                # Small delay between sites to avoid bursts
+                await asyncio.sleep(2.0)
         except Exception as exc:
             logger.error(f"Poller loop error: {exc}", exc_info=True)
 
-        await asyncio.sleep(settings.default_poll_interval_minutes * 60)
+        # Sleep for at least 60 minutes to prevent credit drain
+        await asyncio.sleep(3600)
+

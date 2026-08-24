@@ -222,6 +222,7 @@ export default function Dashboard() {
             refugeName={microclimate?.cooling_refuge || 'Zone D Shaded Canopy'}
             reliefDeltaF={microclimate?.cooling_delta_f ?? 38.5}
             language={workers[0]?.preferred_language || 'en'}
+            onDirectCallClick={() => setShowDirectCallModal(true)}
           />
 
           {/* Active Workforce Roster */}

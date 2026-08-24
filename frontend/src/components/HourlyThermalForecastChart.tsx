@@ -69,6 +69,10 @@ export function HourlyThermalForecastChart({ data }: HourlyThermalForecastChartP
             <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
             <span className="text-emerald-400 font-bold">Canopy Refuge</span>
           </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-purple-500 ring-2 ring-purple-400/50 animate-pulse" />
+            <span className="text-purple-300 font-bold">Recorded Snapshots</span>
+          </div>
         </div>
       </div>
 
@@ -116,65 +120,84 @@ export function HourlyThermalForecastChart({ data }: HourlyThermalForecastChartP
           <path d={canopyPath} fill="none" stroke="#10B981" strokeWidth="2.5" />
 
           {/* Points & Interactive Hover Columns */}
-          {data.map((d, i) => (
-            <g
-              key={i}
-              onMouseEnter={() => setHoverIdx(i)}
-              onMouseLeave={() => setHoverIdx(null)}
-              className="cursor-pointer"
-            >
-              <rect
-                x={getX(i) - innerWidth / (data.length * 2)}
-                y={margin.top}
-                width={innerWidth / data.length}
-                height={innerHeight}
-                fill="transparent"
-              />
-
-              {hoverIdx === i && (
-                <line
-                  x1={getX(i)}
-                  y1={margin.top}
-                  x2={getX(i)}
-                  y2={height - margin.bottom}
-                  stroke="#A27B5C"
-                  strokeWidth="1.5"
-                  strokeDasharray="4 4"
-                />
-              )}
-
-              <circle cx={getX(i)} cy={getY(d.surface_temp_f)} r={hoverIdx === i ? 5 : 3.5} fill="#EF4444" />
-              <circle cx={getX(i)} cy={getY(d.ambient_temp_f)} r={hoverIdx === i ? 5 : 3.5} fill="#F59E0B" />
-              <circle cx={getX(i)} cy={getY(d.canopy_temp_f)} r={hoverIdx === i ? 5 : 3.5} fill="#10B981" />
-
-              {/* X Axis Time Labels */}
-              <text
-                x={getX(i)}
-                y={height - margin.bottom + 18}
-                fill="#DCD7C9"
-                opacity="0.8"
-                fontSize="10"
-                textAnchor="middle"
-                fontFamily="monospace"
+          {data.map((d, i) => {
+            const isRecorded = d.point_type === 'recorded'
+            return (
+              <g
+                key={i}
+                onMouseEnter={() => setHoverIdx(i)}
+                onMouseLeave={() => setHoverIdx(null)}
+                className="cursor-pointer"
               >
-                {d.time_label || `${d.hour}:00`}
-              </text>
-            </g>
-          ))}
+                <rect
+                  x={getX(i) - innerWidth / (data.length * 2)}
+                  y={margin.top}
+                  width={innerWidth / data.length}
+                  height={innerHeight}
+                  fill="transparent"
+                />
+
+                {hoverIdx === i && (
+                  <line
+                    x1={getX(i)}
+                    y1={margin.top}
+                    x2={getX(i)}
+                    y2={height - margin.bottom}
+                    stroke="#A27B5C"
+                    strokeWidth="1.5"
+                    strokeDasharray="4 4"
+                  />
+                )}
+
+                {/* If recorded snapshot, render special glowing halo */}
+                {isRecorded && (
+                  <circle
+                    cx={getX(i)}
+                    cy={getY(d.ambient_temp_f)}
+                    r={9}
+                    fill="none"
+                    stroke="#A855F7"
+                    strokeWidth="2"
+                    className="animate-ping opacity-60"
+                  />
+                )}
+
+                <circle cx={getX(i)} cy={getY(d.surface_temp_f)} r={hoverIdx === i ? 5 : 3.5} fill="#EF4444" />
+                <circle cx={getX(i)} cy={getY(d.ambient_temp_f)} r={hoverIdx === i ? 5 : (isRecorded ? 4.5 : 3.5)} fill={isRecorded ? '#A855F7' : '#F59E0B'} />
+                <circle cx={getX(i)} cy={getY(d.canopy_temp_f)} r={hoverIdx === i ? 5 : 3.5} fill="#10B981" />
+
+                {/* X Axis Time Labels */}
+                <text
+                  x={getX(i)}
+                  y={height - margin.bottom + 18}
+                  fill={isRecorded ? '#A855F7' : '#DCD7C9'}
+                  fontWeight={isRecorded ? 'bold' : 'normal'}
+                  opacity={isRecorded ? 1 : 0.8}
+                  fontSize="10"
+                  textAnchor="middle"
+                  fontFamily="monospace"
+                >
+                  {d.time_label || `${d.hour}:00`}
+                </text>
+              </g>
+            )
+          })}
         </svg>
 
         {/* Hover Tooltip Box */}
         {hoverIdx !== null && data[hoverIdx] && (
           <div
-            className="absolute bg-[#1A2224]/95 backdrop-blur-md border border-[#A27B5C] p-3 rounded-xl shadow-2xl text-xs text-[#DCD7C9] pointer-events-none z-10 space-y-1 w-56 font-mono"
+            className="absolute bg-[#1A2224]/95 backdrop-blur-md border border-[#A27B5C] p-3 rounded-xl shadow-2xl text-xs text-[#DCD7C9] pointer-events-none z-10 space-y-1 w-64 font-mono"
             style={{
-              left: Math.min(Math.max(getX(hoverIdx) - 100, 10), width - 240) + 'px',
+              left: Math.min(Math.max(getX(hoverIdx) - 100, 10), width - 270) + 'px',
               top: '10px'
             }}
           >
             <div className="font-bold text-white border-b border-[#3F4E4F] pb-1 flex justify-between">
               <span>{data[hoverIdx].time_label}</span>
-              <span className="text-[#A27B5C] font-bold">OSHA: {data[hoverIdx].work_rest_ratio}</span>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${data[hoverIdx].point_type === 'recorded' ? 'bg-purple-900/60 text-purple-300 border border-purple-500/40' : 'text-[#A27B5C]'}`}>
+                {data[hoverIdx].point_type === 'recorded' ? '🟣 DB Snapshot' : '📈 Diurnal Model'}
+              </span>
             </div>
             <div className="text-red-400 flex justify-between">
               <span>Ground Asphalt:</span>
@@ -190,7 +213,7 @@ export function HourlyThermalForecastChart({ data }: HourlyThermalForecastChartP
             </div>
             <div className="pt-1 text-[10px] text-[#DCD7C9]/60 border-t border-[#3F4E4F]/40 flex justify-between">
               <span>Solar: {data[hoverIdx].solar_radiation_w_m2} W/m²</span>
-              <span>Water: {data[hoverIdx].hydration_liters_per_hour} L/h</span>
+              <span className="text-white font-bold">OSHA: {data[hoverIdx].work_rest_ratio}</span>
             </div>
           </div>
         )}

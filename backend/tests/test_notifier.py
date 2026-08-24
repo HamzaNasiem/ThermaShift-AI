@@ -5,7 +5,7 @@ import uuid
 from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime, timezone
 
-from app.integrations.retell import format_e164, trigger_outbound_call
+from app.integrations.calle import format_e164, trigger_outbound_call
 from app.integrations.twilio_sms import send_sms, MESSAGE_TEMPLATES
 from app.services import notifier
 

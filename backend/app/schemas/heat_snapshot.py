@@ -57,6 +57,11 @@ class MicroclimateAnalysisResponse(BaseModel):
     vector_origin_lng: float
     vector_target_lat: float
     vector_target_lng: float
+    fortyguard_max_temp_c: float | None = None
+    fortyguard_mean_temp_c: float | None = None
+    fortyguard_n_cells: int = 0
+    fortyguard_activity_id: str = ""
+    is_satellite_verified: bool = True
 
 
 class HourlyForecastPoint(BaseModel):
@@ -70,6 +75,8 @@ class HourlyForecastPoint(BaseModel):
     risk_level: str
     work_rest_ratio: str
     hydration_liters_per_hour: float
+    point_type: str = "forecast"  # "recorded" for real historical DB snapshot, "forecast" for diurnal model
+    snapshot_id: str | None = None
 
 
 class HourlyForecastResponse(BaseModel):
@@ -78,4 +85,5 @@ class HourlyForecastResponse(BaseModel):
     peak_hour: str
     peak_surface_temp_f: float
     points: list[HourlyForecastPoint]
+
 

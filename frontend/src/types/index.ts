@@ -90,6 +90,11 @@ export interface MicroclimateAnalysis {
   vector_origin_lng: number
   vector_target_lat: number
   vector_target_lng: number
+  fortyguard_max_temp_c?: number
+  fortyguard_mean_temp_c?: number
+  fortyguard_n_cells?: number
+  fortyguard_activity_id?: string
+  is_satellite_verified?: boolean
 }
 
 export interface HourlyForecastPoint {
@@ -103,7 +108,10 @@ export interface HourlyForecastPoint {
   risk_level: string
   work_rest_ratio: string
   hydration_liters_per_hour: number
+  point_type?: 'recorded' | 'forecast'
+  snapshot_id?: string | null
 }
+
 
 export interface HourlyForecastResponse {
   site_id: string

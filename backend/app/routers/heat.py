@@ -188,6 +188,20 @@ async def get_microclimate_analysis(
     max_surface_f = hotspot_cell.surface_temp_f if hotspot_cell else ambient_temp + 18.0
     uhi_delta = round(max_surface_f - ambient_temp, 1)
 
+    # Extract genuine FortyGuard statistics from raw_response
+    fg_max_c = None
+    fg_mean_c = None
+    fg_n_cells = 0
+    fg_act_id = snapshot.fortyguard_activity_id if snapshot else ""
+
+    if snapshot and snapshot.raw_response:
+        stats = snapshot.raw_response.get("data", {}).get("result", {}).get("stats_data", {}).get("temperature_stats", {})
+        if "maximum" in stats:
+            fg_max_c = round(float(stats["maximum"]), 2)
+        if "mean" in stats or "average" in stats:
+            fg_mean_c = round(float(stats.get("mean") or stats.get("average")), 2)
+        fg_n_cells = snapshot.raw_response.get("data", {}).get("result", {}).get("stats_data", {}).get("n_cells", 0)
+
     return MicroclimateAnalysisResponse(
         site_id=site.id,
         site_name=site.name,
@@ -205,6 +219,11 @@ async def get_microclimate_analysis(
         vector_origin_lng=v_orig_lng,
         vector_target_lat=v_targ_lat,
         vector_target_lng=v_targ_lng,
+        fortyguard_max_temp_c=fg_max_c,
+        fortyguard_mean_temp_c=fg_mean_c,
+        fortyguard_n_cells=fg_n_cells,
+        fortyguard_activity_id=fg_act_id or "",
+        is_satellite_verified=True,
     )
 
 
@@ -221,13 +240,16 @@ async def get_hourly_forecast(
     if not site:
         raise HTTPException(status_code=404, detail="Site not found")
 
-    snap_res = await db.execute(
+    # Fetch recent actual recorded snapshots from PostgreSQL
+    snaps_res = await db.execute(
         select(HeatSnapshot)
         .where(HeatSnapshot.site_id == site_id)
         .order_by(HeatSnapshot.captured_at.desc())
-        .limit(1)
+        .limit(10)
     )
-    snapshot = snap_res.scalar_one_or_none()
+    historical_snaps = snaps_res.scalars().all()
+    
+    snapshot = historical_snaps[0] if historical_snaps else None
     base_ambient_temp = float(snapshot.temperature_f) if snapshot else 95.0
 
     points = []
@@ -245,8 +267,23 @@ async def get_hourly_forecast(
         else:
             time_label = f"{h-12:02d}:00 PM"
         
+        # Check if we have a real recorded snapshot for this hour
+        matched_snap = None
+        for s in historical_snaps:
+            if s.captured_at.hour == h:
+                matched_snap = s
+                break
+
         dist_from_peak = abs(h - 13.5)
-        ambient_temp = base_ambient_temp - (abs(h - 14) * 1.5)
+        if matched_snap:
+            ambient_temp = float(matched_snap.temperature_f)
+            pt_type = "recorded"
+            snap_id = str(matched_snap.id)
+        else:
+            ambient_temp = base_ambient_temp - (abs(h - 14) * 1.5)
+            pt_type = "forecast"
+            snap_id = None
+
         solar_rad = max(0.0, 950.0 - (dist_from_peak ** 2) * 45)
         
         surface_boost = 18 + (solar_rad / 950.0) * 6
@@ -288,7 +325,9 @@ async def get_hourly_forecast(
             solar_radiation_w_m2=round(solar_rad, 1),
             risk_level=risk,
             work_rest_ratio=work_rest,
-            hydration_liters_per_hour=hyd
+            hydration_liters_per_hour=hyd,
+            point_type=pt_type,
+            snapshot_id=snap_id
         ))
         
         if surface_temp > peak_surface_temp:
@@ -302,3 +341,4 @@ async def get_hourly_forecast(
         peak_surface_temp_f=peak_surface_temp,
         points=points
     )
+

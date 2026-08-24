@@ -7,6 +7,7 @@ interface AudioVoicePlayerProps {
   refugeName: string
   reliefDeltaF: number
   language?: 'en' | 'ur'
+  onDirectCallClick?: () => void
 }
 
 export default function AudioVoicePlayer({
@@ -16,6 +17,7 @@ export default function AudioVoicePlayer({
   refugeName,
   reliefDeltaF,
   language = 'en',
+  onDirectCallClick,
 }: AudioVoicePlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentLang, setCurrentLang] = useState<'en' | 'ur'>(language)
@@ -81,7 +83,7 @@ export default function AudioVoicePlayer({
               CALL-E Audio Dispatch Preview
             </h4>
             <span className="text-[9px] text-[#A27B5C] font-semibold">
-              Live AI Voice Warning Broadcast (Browser Audio)
+              Synthesized Voice Warning (Browser Audio Simulator)
             </span>
           </div>
         </div>
@@ -125,17 +127,30 @@ export default function AudioVoicePlayer({
       </div>
 
       {/* Play Controls & Audio Equalizer Bars */}
-      <div className="flex items-center justify-between pt-1">
-        <button
-          onClick={handlePlayAudio}
-          className={`px-4 py-2 rounded-xl text-xs font-bold font-mono transition-all flex items-center gap-2 shadow-md ${
-            isPlaying
-              ? 'bg-red-800 hover:bg-red-700 text-white animate-pulse'
-              : 'bg-emerald-700 hover:bg-emerald-600 text-white'
-          }`}
-        >
-          <span>{isPlaying ? '⏹ Stop Voice' : '▶ Play Voice Warning'}</span>
-        </button>
+      <div className="flex items-center justify-between pt-1 flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handlePlayAudio}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono transition-all flex items-center gap-1.5 shadow-md ${
+              isPlaying
+                ? 'bg-red-800 hover:bg-red-700 text-white animate-pulse'
+                : 'bg-emerald-700 hover:bg-emerald-600 text-white'
+            }`}
+          >
+            <span>{isPlaying ? '⏹ Stop Voice' : '▶ Play Voice Warning'}</span>
+          </button>
+
+          {onDirectCallClick && (
+            <button
+              onClick={onDirectCallClick}
+              className="px-3 py-1.5 rounded-xl bg-[#1A2224] hover:bg-[#3F4E4F] text-[#A27B5C] hover:text-white text-xs font-bold font-mono border border-[#A27B5C]/40 transition-all flex items-center gap-1"
+              title="Call your real mobile phone via CALL-E"
+            >
+              <span>📱</span>
+              <span>Cellular Call</span>
+            </button>
+          )}
+        </div>
 
         {isPlaying && (
           <div className="flex items-center gap-1">
@@ -150,3 +165,4 @@ export default function AudioVoicePlayer({
     </div>
   )
 }
+

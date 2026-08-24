@@ -388,7 +388,7 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
                 : 'text-[#DCD7C9]/60 hover:text-white'
             }`}
           >
-            🌐 All 36 Cells
+            🌐 All 36 Microcells
           </button>
           <button
             onClick={() => setZoneFilter('hotspots')}
@@ -398,7 +398,7 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
                 : 'text-[#DCD7C9]/60 hover:text-red-300'
             }`}
           >
-            🔥 Hotspots
+            🔥 Thermal Hotspots
           </button>
           <button
             onClick={() => setZoneFilter('shelters')}
@@ -408,7 +408,7 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
                 : 'text-[#DCD7C9]/60 hover:text-emerald-300'
             }`}
           >
-            🛡️ Canopies
+            🛡️ Shaded Canopies
           </button>
         </div>
 
@@ -416,18 +416,18 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
         <div className="flex items-center gap-1 bg-[#1A2224] p-1 rounded-xl border border-[#3F4E4F] text-[10px]">
           <button
             onClick={() => setShowThermalGrid(!showThermalGrid)}
-            className={`px-2 py-1 rounded-lg font-bold transition-all ${
+            className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
               showThermalGrid
                 ? 'bg-[#A27B5C] text-white'
                 : 'text-[#DCD7C9]/60 hover:text-white'
             }`}
-            title="Toggle 100m Thermal Grid"
+            title="Toggle FortyGuard Hyperlocal Thermal Modeling Layer"
           >
-            🔥 Grid
+            🔥 Micro-Grid
           </button>
           <button
             onClick={() => setShowContrastMode(!showContrastMode)}
-            className={`px-2 py-1 rounded-lg font-bold transition-all ${
+            className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
               showContrastMode
                 ? 'bg-red-900/80 text-red-200 border border-red-500/40'
                 : 'text-[#DCD7C9]/60 hover:text-white'
@@ -438,14 +438,14 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
           </button>
           <button
             onClick={() => setShowEscapeVector(!showEscapeVector)}
-            className={`px-2 py-1 rounded-lg font-bold transition-all ${
+            className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
               showEscapeVector
                 ? 'bg-emerald-900/80 text-emerald-200 border border-emerald-500/40'
                 : 'text-[#DCD7C9]/60 hover:text-white'
             }`}
-            title="Toggle Autonomous ThermaShift Vector"
+            title="Toggle Autonomous ThermaShift Evacuation Vector"
           >
-            ⚡ Vector
+            ⚡ Escape Vector
           </button>
           <button
             onClick={() => setShowShelters(!showShelters)}
