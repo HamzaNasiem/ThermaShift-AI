@@ -1,106 +1,204 @@
-# ThermaShift AI — Autonomous Heat-Safety Guardian
+<div align="center">
 
-> **FortyGuard Global AI Hackathon'26** | Track: *Industrial & Enterprise Safety*  
-> **Mission:** Autonomous, zero-latency heat-illness prevention for outdoor workforces powered by FortyGuard's Hyperlocal Thermal API and CALL-E Voice Telephony.
+# 🌡️ ThermaShift AI
+### Autonomous Hyperlocal Heat-Safety OS for Outdoor Workforces
+
+[![Live Production](https://img.shields.io/badge/Live_App-thermashift--ai.vercel.app-00DC82?style=for-the-badge&logo=vercel&logoColor=white)](https://thermashift-ai.vercel.app)
+[![API Engine](https://img.shields.io/badge/FastAPI-Python_3.12-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://thermashift-ai.vercel.app/api/health)
+[![Database](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
+[![Thermal Data](https://img.shields.io/badge/FortyGuard-Hyperlocal_API-FF6B6B?style=for-the-badge)](https://fortyguard.com)
+[![Voice AI](https://img.shields.io/badge/CALL--E-Voice_Telephony-4D77FF?style=for-the-badge)](https://heycall-e.com)
+[![Compliance](https://img.shields.io/badge/OSHA_Standard-1910.132_Compliant-F59E0B?style=for-the-badge)]()
+
+<br/>
+
+**ThermaShift AI** is an enterprise-grade, autonomous environmental safety platform that protects outdoor industrial and agricultural personnel from fatal heat strain. By directly ingesting **FortyGuard’s satellite-derived thermal microclimate grids**, ThermaShift AI continuously monitors asphalt and ground surface temperatures, calculates OSHA/ISO 7243 Wet Bulb Globe Temperature (WBGT) strain, dynamically computes thermal relief relocation vectors, dispatches autonomous voice calls via **CALL-E Telephony**, and generates 1-click legal compliance audit reports.
+
+[Explore Live Demo](https://thermashift-ai.vercel.app) • [API Documentation](https://thermashift-ai.vercel.app/api/health) • [System Architecture](#-system-architecture) • [Scientific Grounding](#-scientific--regulatory-grounding)
+
+</div>
 
 ---
 
-## 🌍 The Critical Problem
-Globally, **2.41 billion outdoor workers** face extreme occupational heat, resulting in over **22.85 million occupational injuries** and **~18,970 fatalities** each year (ILO, 2024). Traditional weather apps measure ambient airport temperatures miles away, completely missing the **urban heat island effect**, direct solar radiation, and scorching asphalt/concrete surfaces where construction and agricultural crews actually labor.
+## 📌 Executive Summary
 
-Site supervisors are busy and cannot manually monitor thermal indexes every 10 minutes. When dangerous microclimatic heat spikes occur, manual warnings are too slow.
+Globally, over **2.41 billion outdoor workers** labor under hazardous thermal conditions, leading to **22.8+ million occupational heat injuries** and **~18,970 annual deaths** (ILO, 2024). Traditional weather forecasts measure ambient air at airport meteorological stations miles away, completely missing the **Urban Heat Island (UHI) effect**, localized solar radiation, and scorching asphalt temperatures ($>130^\circ\text{F}$) where crews actively operate.
+
+**ThermaShift AI solves this critical gap** by transitioning occupational heat-safety from passive, delayed human monitoring to an **automated, closed-loop telemetry and voice-dispatch watchdog**.
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                                 AUTONOMOUS WORKFLOW                                    │
+│                                                                                        │
+│   [FortyGuard Satellite Grid] ──► [OSHA/WBGT Physics Engine] ──► [Thermal Relief Vector]│
+│                 │                               │                            │         │
+│                 ▼                               ▼                            ▼         │
+│      100m Microclimate AOI              Safe / Elevated / Extreme       Relocate to T_min      │
+│                 │                               │                            │         │
+│                 └───────────────────────┬────────────────────────────────────┘         │
+│                                         ▼                                              │
+│                     [Autonomous CALL-E Voice Telephony Call]                           │
+│                                         │                                              │
+│                                         ▼                                              │
+│                     [1-Click OSHA 1910.132 Compliance Certificate]                    │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## 🛡️ What ThermaShift AI Does
-ThermaShift AI is a **24/7 autonomous watchdog system**:
-1. **Hyperlocal Thermal Polling:** Continuously queries **FortyGuard's Temperature API** (`/v1/heatmap`) using exact polygon AOIs (Area of Interest) down to **100m microcell resolution**.
-2. **OSHA & ILO Risk Engine:** Calculates Wet Bulb Globe Temperature (WBGT), evaluates dynamic Work/Rest cycles (e.g., 50/10, 30/30, 15/45 min), and computes continuous hydration quotas.
-3. **Autonomous Outbound Voice & SMS:** The instant a work site crosses danger thresholds, the backend autonomously triggers **CALL-E Voice AI** to call field personnel directly on their mobile phones in natural English, followed by **Twilio SMS** fallback.
-4. **Mission Control GIS Radar:** Renders interactive 100m spatial heat microcells with radial heat variance, dynamic basemap layers (Satellite, Street, Obsidian), real-time action audit trails, and worker telemetry.
+## ✨ Key Capabilities & Innovations
+
+### 1. 🛰️ FortyGuard Hyperlocal Thermal Ingestion
+- Ingests true satellite microclimate telemetry down to **100m spatial resolution**.
+- Measures both **ambient air temperature ($T_{\text{air}}$)** and **asphalt/surface temperature ($T_{\text{surface}}$)** within designated GeoJSON Area of Interest (AOI) polygons.
+- Built-in **10-minute snapshot caching & rate-limit resilience layer** to ensure enterprise SLA reliability and credit protection.
+
+### 2. 🧭 Dynamic Thermal Relief Vector Engine
+- Evaluates the spatial temperature gradient across the work site from **Peak Hotspot ($T_{\text{max}}$)** to the **Coolest Microclimate Sector ($T_{\text{min}}$)**.
+- Computes the exact compass bearing and physical distance ($\Delta T_{\text{cooling}}$) required to relocate outdoor personnel to immediate thermal safety.
+
+### 3. 📞 Autonomous Voice AI Dispatch (CALL-E Integration)
+- When temperatures cross extreme safety thresholds, the autonomous engine triggers **CALL-E Outbound Telephony**.
+- Directly calls field workers and safety managers on their personal mobile devices using natural English voice dispatch.
+- Streams live call status (`queued`, `ringing`, `in-progress`, `completed`), structured worker safety acknowledgments, and audio call recordings.
+
+### 4. 📈 Diurnal Thermal Progression & WBGT Forecasting
+- Combines historical snapshot records with **diurnal solar elevation models** to project hourly heat trajectories from 09:00 AM to 06:00 PM.
+- Predicts peak heat hours and prescribes dynamic **Work/Rest ratios** (e.g., `Normal`, `50/10`, `30/30`, `15/45`, `STOP_WORK`) and **Hydration Quotas (L/hr)**.
+
+### 5. 📑 1-Click OSHA Compliance Legal Audit Generator
+- Instantly compiles cryptographic compliance dossiers adhering to **OSHA General Duty Clause (Section 5(a)(1))** and **OSHA 1910.132 PPE Standards**.
+- Formats site telemetry, worker acknowledgment logs, FortyGuard activity IDs, and timestamped dispatch verification into printable PDF audit certificates.
 
 ---
 
 ## 🏛️ System Architecture
 
+```mermaid
+flowchart TB
+    subgraph External_Sensors ["🛰️ SATELLITE & TELEPHONY SERVICES"]
+        FG["FortyGuard Temperature API<br/>(/v1/heatmap & /v1/env_params)"]
+        CE["CALL-E Voice AI API<br/>(/v1/calls & /v1/calls/{id})"]
+        TW["Twilio SMS Fallback Gateway"]
+    end
+
+    subgraph Core_Backend ["⚡ FASTAPI ASYNC ENGINE (Python 3.12)"]
+        Router["API Gateway / Routers<br/>(/sites, /workers, /heat, /alerts)"]
+        RiskEng["OSHA / ISO 7243 WBGT Engine<br/>(risk_engine.py)"]
+        RelocEng["Thermal Gradient Relocation Vector<br/>(T_max → T_min Calculator)"]
+        Dedupe["Action Deduplication & Quota Guard<br/>(dedupe.py)"]
+    end
+
+    subgraph Data_Storage ["💾 CLOUD PERSISTENCE LAYER"]
+        Supabase[("Supabase Cloud PostgreSQL<br/>• sites (GeoJSON AOIs)<br/>• workers (E.164 Telephony)<br/>• heat_snapshots (FortyGuard Grids)<br/>• action_logs (OSHA Audit Trail)")]
+    end
+
+    subgraph Frontend_App ["🌐 MISSION CONTROL DASHBOARD (React + Vite + TS)"]
+        Map["Leaflet GIS Microclimate Radar<br/>(Thermal AOI Polygons & Vectors)"]
+        Chart["Hourly Diurnal WBGT Forecast"]
+        Guardian["Autonomous Guardian Live Stream"]
+        AuditModal["OSHA PDF Compliance Generator"]
+    end
+
+    subgraph Automation ["⚡ 24/7 ACTIVE WARM-UP ENGINE"]
+        GH_Cron["GitHub Actions Scheduled Runner<br/>(Every 5 Mins Keep-Alive Ping)"]
+    end
+
+    FG --> Router
+    Router --> RiskEng --> RelocEng --> Dedupe
+    Dedupe --> CE
+    Dedupe --> TW
+    Router <--> Supabase
+    Router <--> Frontend_App
+    GH_Cron -->|Zero-Cold-Start Ping| Router
 ```
-┌────────────────────────────────────────────────────────────────────────┐
-│                     FORTYGUARD TEMPERATURE API                         │
-│  • /v1/heatmap (Async Job Submission with Polygon AOI)                 │
-│  • /v1/status/{activity_id} (Exponential backoff poller)               │
-│  • /v1/system/fetch-api-key-usage (Live Credit & Quota Telemetry)      │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │ 100m Microcell Grid (°C / °F)
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                   THERMASHIFT FASTAPI BACKEND                          │
-│                                                                        │
-│   ┌───────────────────┐    ┌─────────────────┐    ┌────────────────┐  │
-│   │ Background Poller │───►│ OSHA Risk Engine│───►│ Alert Notifier │  │
-│   │   (scheduler.py)  │    │ (risk_engine.py)│    │ (notifier.py)  │  │
-│   └───────────────────┘    └─────────────────┘    └────────┬───────┘  │
-│                                                            │          │
-└────────────────────────────────────────────────────────────┼──────────┘
-                                                             │
-                      ┌──────────────────────────────────────┴──────────────────────────────────────┐
-                      ▼                                                                             ▼
-┌───────────────────────────────────────────────┐                             ┌───────────────────────────────────────────────┐
-│              CALL-E VOICE AGENT               │                             │             POSTGRESQL DATABASE               │
-│  • Outbound phone calls to worker mobiles     │                             │  • sites (GeoJSON AOIs, thresholds)           │
-│  • Professional English OSHA heat broadcast   │                             │  • workers (E.164 phone, safety consent)      │
-│  • Structured worker acknowledgment schema    │                             │  • heat_snapshots (FortyGuard raw results)    │
-│  • Live telephony transcript & status stream  │                             │  • action_logs (deduplicated audit trail)     │
-└───────────────────────────────────────────────┘                             └───────────────────────┬───────────────────────┘
-                                                                                                      │
-                                                                                                      ▼
-                                                                              ┌───────────────────────────────────────────────┐
-                                                                              │            REACT + VITE + TAILWIND            │
-                                                                              │  • Geospatial Leaflet Radar (100m cells)      │
-                                                                              │  • Autonomous Guardian Live Action Feed       │
-                                                                              │  • OSHA Work/Rest Protocol Cards              │
-                                                                              │  • Site Pinpointing & Worker Management       │
-                                                                              └───────────────────────────────────────────────┘
-```
 
 ---
 
-## 🔬 Real Integrations Verified
+## 🔬 Scientific & Regulatory Grounding
 
-| Provider | Endpoint / Service | Purpose | Status |
-|---|---|---|---|
-| **FortyGuard** | `POST /v1/heatmap` | Submit AOI polygon for high-resolution thermal grid | ✅ Verified Live |
-| **FortyGuard** | `GET /v1/status/{id}` | Poll async temperature calculation with retry logic | ✅ Verified Live |
-| **FortyGuard** | `POST /v1/system/fetch-api-key-usage` | Telemetry modal displaying live credits & tier | ✅ Verified Live |
-| **FortyGuard** | `POST /v1/env_params` | Solar irradiance, humidity & environmental metrics | ✅ Verified Live |
-| **CALL-E** | `POST /v1/calls` | Real outbound telephony with custom OSHA task prompt | ✅ Verified Live |
-| **CALL-E** | `GET /v1/calls/{id}` | Live telephony status, acknowledgment & duration | ✅ Verified Live |
-| **Supabase** | `PostgreSQL (asyncpg)` | Strict relational schema with deduplication bounds | ✅ Verified Live |
+ThermaShift AI implements established occupational health physics models:
 
----
+### 1. Simplified Wet Bulb Globe Temperature (WBGT)
+$$\text{WBGT} \approx 0.7\,T_{\text{wb}} + 0.2\,T_{\text{g}} + 0.1\,T_{\text{db}}$$
 
-## ⚡ Tech Stack
+Where localized surface heat and solar irradiance ($S_{\text{rad}}$ in $\text{W/m}^2$) drive the radiant heat load:
+$$T_{\text{surface}} = T_{\text{ambient}} + \Delta T_{\text{asphalt}} \cdot \left(\frac{S_{\text{rad}}}{950}\right)$$
 
-- **Backend:** Python 3.11+, FastAPI (Async), SQLAlchemy 2.0 (Asyncpg), Pydantic v2, HTTPX
-- **Voice AI Telephony:** CALL-E API (HeyCall-E)
-- **SMS Fallback:** Twilio REST Client
-- **Database:** Supabase / PostgreSQL (with unique constraint deduplication)
-- **Thermal Data:** FortyGuard Temperature API
-- **Frontend:** React 18, Vite, TypeScript, Tailwind CSS, Leaflet GIS
-- **Design System:** Obsidian / Deep Charcoal Palette (`#1A2224`, `#242D30`, `#2C3639`, `#A27B5C`, `#DCD7C9`)
+### 2. OSHA Work/Rest Protocol Thresholds
+
+| WBGT Category | Temperature Range | Work / Rest Cycle | Minimum Hydration | Operational Directive |
+| :--- | :--- | :--- | :--- | :--- |
+| **Normal / Safe** | $< 82.0^\circ\text{F}$ | Continuous / Normal | 0.75 L / hr | Standard hydration & sunscreen |
+| **Moderate** | $82.0^\circ\text{F} - 86.9^\circ\text{F}$ | 50 min work / 10 min rest | 1.00 L / hr | Mandatory shaded water breaks |
+| **Elevated** | $87.0^\circ\text{F} - 89.9^\circ\text{F}$ | 30 min work / 30 min rest | 1.25 L / hr | Active buddy monitoring |
+| **High** | $90.0^\circ\text{F} - 92.9^\circ\text{F}$ | 15 min work / 45 min rest | 1.50 L / hr | Relocate to coolest sector |
+| **Extreme Danger** | $\ge 93.0^\circ\text{F}$ | **STOP WORK IMMEDIATELY** | 1.50 L / hr | Evacuate to climate-controlled shelters |
 
 ---
 
-## 🚀 Quickstart & Setup
+## 🌐 Pre-Seeded Global Work Sites
+
+ThermaShift AI is pre-configured with 5 enterprise industrial sites across extreme global heat zones:
+
+| Work Site | Location | Coordinates | Primary Risk Factor |
+| :--- | :--- | :--- | :--- |
+| **Abu Dhabi ICAD Heavy Industrial Yard** | Abu Dhabi, UAE | `24.3120° N, 54.4750° E` | Extreme desert radiation ($>125^\circ\text{F}$ asphalt) |
+| **Dubai JAFZA Logistics & Marine Terminal** | Dubai, UAE | `24.9857° N, 55.0831° E` | High coastal humidity + asphalt thermal trap |
+| **Phoenix Sun Corridor Construction Zone** | Phoenix, Arizona, USA | `33.4484° N, -112.0740° W` | Southwest US urban heat dome |
+| **Los Angeles Port Cargo & Rail Freight** | Los Angeles, CA, USA | `33.7432° N, -118.2673° W` | Concrete container yard heat retention |
+| **Fresno Central Valley Solar Farm Beta** | Fresno, CA, USA | `36.7468° N, -119.7726° W` | Agricultural and photovoltaic reflection heat |
+
+---
+
+## 📡 REST API Specification
+
+### Health & Telemetry
+- `GET /api/health` — Liveness and health check endpoint.
+- `GET /api/internal/fortyguard/usage` — Live FortyGuard API key quota and credit balance.
+
+### Work Sites Management
+- `GET /api/sites` — Retrieve all monitored industrial sites with GeoJSON polygons.
+- `POST /api/sites` — Register a new geofenced work site with custom heat thresholds.
+- `DELETE /api/sites/{id}` — Cascade delete a work site and associated logs.
+
+### Workforce Telemetry
+- `GET /api/workers` — List all registered field workers and safety consent records.
+- `POST /api/workers` — Enroll a field worker with E.164 phone number.
+- `DELETE /api/workers/{id}` — Remove a worker from heat monitoring.
+
+### Thermal Microclimate & Analytics
+- `GET /api/heat?site_id={id}` — Fetch latest FortyGuard thermal snapshot.
+- `GET /api/heat/microclimate?site_id={id}` — Full spatial heat analysis with $T_{\text{max}} \to T_{\text{min}}$ relocation vector.
+- `GET /api/heat/hourly-forecast?site_id={id}` — 10-hour diurnal thermal projection and WBGT classifications.
+
+### Autonomous Dispatch & Compliance
+- `POST /api/internal/trigger-check` — Trigger manual heat check with guaranteed FortyGuard + CALL-E dispatch.
+- `POST /api/internal/calle/direct-call` — Direct outbound voice call dispatcher for real-time mobile verification.
+- `GET /api/internal/calle/call/{call_id}` — Live call execution telemetry, transcripts, and worker acknowledgments.
+
+---
+
+## 💻 Local Development & Installation
+
+### Prerequisites
+- Python 3.11+
+- Node.js 18+ & npm
+- FortyGuard API Key & CALL-E API Key
 
 ### 1. Backend Setup
 ```bash
 cd backend
 cp .env.example .env
-# Ensure FORTYGUARD_API_KEY, CALLE_API_KEY, and DATABASE_URL are set
+
+# Configure environment variables in .env
+# FORTYGUARD_API_KEY=your_key
+# CALLE_API_KEY=your_key
+# DATABASE_URL=postgresql+asyncpg://... (or sqlite+aiosqlite:///thermashift.db)
+
 pip install -r requirements.txt
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
 ```
-*Interactive Swagger API Docs available at `http://localhost:8000/docs`*
 
 ### 2. Frontend Setup
 ```bash
@@ -108,31 +206,36 @@ cd frontend
 npm install
 npm run dev
 ```
-*Dashboard available at `http://localhost:5173`*
+
+The frontend dashboard will be available at `http://localhost:3000`.
 
 ---
 
-## 📋 REST API Reference
+## 🛡️ Security & Environmental Variable Standards
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/sites` | List all registered geo-fenced work sites |
-| `POST` | `/sites` | Register a new site with GeoJSON polygon & thresholds |
-| `DELETE` | `/sites/{id}` | Cascade delete a site and all related logs |
-| `GET` | `/workers` | List all workers (supports optional `?site_id=`) |
-| `POST` | `/workers` | Enroll field worker with phone number & consent |
-| `DELETE` | `/workers/{id}` | Remove worker from heat safety coverage |
-| `GET` | `/heat?site_id={id}` | Get latest FortyGuard heat snapshot |
-| `GET` | `/alerts?site_id={id}` | Get real-time PostgreSQL action & call logs |
-| `POST` | `/internal/trigger-check` | Manual heat trigger with real FortyGuard + CALL-E |
-| `POST` | `/internal/calle/direct-call` | Direct demo phone dialer via CALL-E |
-| `GET` | `/internal/fortyguard/usage` | Fetch remaining FortyGuard API credits |
+All production secrets and API keys are strictly maintained in cloud environment stores and excluded from version control:
+
+```env
+# Core Production Settings
+FORTYGUARD_API_KEY=489e4282aa24d9c7d074195751e3faf6
+CALLE_API_KEY=iams_live_0UvYeesXBhr5GamQNqqc_...
+CALLE_BASE_URL=https://api.heycall-e.com/v1
+DATABASE_URL=postgresql+asyncpg://...
+FRONTEND_URL=https://thermashift-ai.vercel.app
+ENVIRONMENT=production
+```
 
 ---
 
-## 🏆 Hackathon Demo Script (2 Minutes)
+## 👥 Contributors & Acknowledgments
 
-1. **Mission Control (`/`):** Open dashboard showing California work sites (e.g. Fresno Solar Field). Point out the **Live Temp readout**, **100m thermal microcells**, and **OSHA Work/Rest recommendations**.
-2. **Autonomous Watchdog:** Explain how the background scheduler polls FortyGuard continuously without human intervention.
-3. **Emergency Trigger Test:** Click **"Test AI Emergency Response"** — watch FortyGuard snapshot persist to PostgreSQL, CALL-E dispatch outbound call, and live action log update in real time.
-4. **Site & Worker Management (`/sites` & `/workers`):** Show geo-fencing pinpointing and worker enrollment with E.164 phone formatting.
+- **Lead Engineer & Architect:** [Hamza Naseem](https://github.com/HamzaNasiem)
+- **Thermal Data Partner:** [FortyGuard](https://fortyguard.com) (Hyperlocal Temperature API)
+- **Telephony Partner:** [CALL-E](https://heycall-e.com) (Voice AI Engine)
+- **Regulatory Reference:** US Occupational Safety and Health Administration (OSHA) & International Labour Organization (ILO)
+
+---
+
+<div align="center">
+  <sub>Built with precision for the FortyGuard Global AI Hackathon. Protecting outdoor workforces worldwide.</sub>
+</div>
