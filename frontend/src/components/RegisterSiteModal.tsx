@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createSite } from '../lib/api'
 import type { Site } from '../types'
 
 interface RegisterSiteModalProps {
@@ -56,27 +57,17 @@ export default function RegisterSiteModal({ onSiteCreated, onClose }: RegisterSi
     }
 
     try {
-      const res = await fetch('/api/sites', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          polygon_geojson,
-          elevated_threshold_f: parseFloat(elevatedF),
-          extreme_threshold_f: parseFloat(extremeF),
-        })
+      const site = await createSite({
+        name,
+        polygon_geojson,
+        elevated_threshold_f: parseFloat(elevatedF),
+        extreme_threshold_f: parseFloat(extremeF),
       })
 
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}))
-        throw new Error(body.detail || `Failed to create site: ${res.statusText}`)
-      }
-
-      const site = await res.json()
       onSiteCreated(site)
       onClose()
     } catch (err: any) {
-      setError(err.message)
+      setError(err.message || 'Failed to create site')
     } finally {
       setLoading(false)
     }

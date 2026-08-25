@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { getCalleCallStatus } from '../lib/api'
 
 interface CalleLiveModalProps {
   callId: string
@@ -12,9 +13,7 @@ export default function CalleLiveModal({ callId, onClose }: CalleLiveModalProps)
 
   async function fetchStatus() {
     try {
-      const res = await fetch(`/api/internal/calle/call/${callId}`)
-      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
-      const json = await res.json()
+      const json = await getCalleCallStatus(callId)
       setData(json.call)
       setError(null)
     } catch (err: any) {

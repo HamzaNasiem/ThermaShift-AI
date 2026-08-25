@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { triggerDirectCall } from '../lib/api'
 
 interface DirectCallModalProps {
   initialWorkerName?: string
@@ -24,21 +25,10 @@ export default function DirectCallModal({
     setResult(null)
 
     try {
-      const res = await fetch('/api/internal/calle/direct-call', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phone_number: phoneNumber,
-          worker_name: workerName || 'Field Worker',
-        }),
+      const data = await triggerDirectCall({
+        phone_number: phoneNumber,
+        worker_name: workerName || 'Field Worker',
       })
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({ detail: res.statusText }))
-        throw new Error(errData.detail || `HTTP ${res.status}`)
-      }
-
-      const data = await res.json()
       setResult(data)
     } catch (err: any) {
       setError(err.message)

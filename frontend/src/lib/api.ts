@@ -1,6 +1,6 @@
 import type { Site, Worker, HeatSnapshot, ActionLog, TriggerCheckResponse, HourlyForecastResponse } from '../types'
 
-const API_BASE = String((import.meta as any).env?.VITE_API_BASE || '/api').replace(/\/$/, '')
+const API_BASE = String((import.meta as any).env?.VITE_API_BASE || 'https://thermashift-ai.onrender.com').replace(/\/$/, '')
 
 export async function getSites(): Promise<Site[]> {
   const res = await fetch(`${API_BASE}/sites`)
@@ -40,54 +40,20 @@ export async function createWorker(payload: {
   site_id: string
   name: string
   phone_number: string
-  preferred_language?: 'ur' | 'en'
+  preferred_language?: string
 }): Promise<Worker> {
   const res = await fetch(`${API_BASE}/workers`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   })
-  if (!res.ok) throw new Error(`Failed to enroll worker: ${res.statusText}`)
+  if (!res.ok) throw new Error(`Failed to create worker: ${res.statusText}`)
   return res.json()
 }
 
-export async function getHeatSnapshot(siteId: string): Promise<HeatSnapshot | null> {
-  const res = await fetch(`${API_BASE}/heat?site_id=${siteId}`)
-  if (res.status === 404) return null
-  if (!res.ok) throw new Error(`Failed to fetch heat snapshot: ${res.statusText}`)
-  return res.json()
-}
-
-export const getLatestHeat = getHeatSnapshot
-
-export async function getHeatHistory(siteId: string, limit = 20): Promise<HeatSnapshot[]> {
-  const res = await fetch(`${API_BASE}/heat/history?site_id=${siteId}&limit=${limit}`)
-  if (!res.ok) throw new Error(`Failed to fetch heat history: ${res.statusText}`)
-  return res.json()
-}
-
-export async function getAlerts(siteId: string, limit = 20): Promise<ActionLog[]> {
-  const res = await fetch(`${API_BASE}/alerts?site_id=${siteId}&limit=${limit}`)
-  if (!res.ok) throw new Error(`Failed to fetch alerts: ${res.statusText}`)
-  return res.json()
-}
-
-export async function triggerCheck(siteId: string, forceExtreme = false): Promise<TriggerCheckResponse> {
-  const res = await fetch(
-    `${API_BASE}/internal/trigger-check?site_id=${siteId}&force_extreme=${forceExtreme}`,
-    { method: 'POST' }
-  )
-  if (!res.ok) {
-    const errorBody = await res.json().catch(() => ({}))
-    throw new Error(errorBody.detail || `Trigger check failed: ${res.statusText}`)
-  }
-  return res.json()
-}
-
-export async function getFortyGuardUsage(): Promise<any> {
-  const res = await fetch(`${API_BASE}/internal/fortyguard/usage`)
-  if (!res.ok) throw new Error(`Failed to fetch FortyGuard usage: ${res.statusText}`)
-  return res.json()
+export async function deleteWorker(workerId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/workers/${workerId}`, { method: 'DELETE' })
+  if (!res.ok) throw new Error(`Failed to delete worker: ${res.statusText}`)
 }
 
 export async function deleteSite(siteId: string): Promise<void> {
@@ -95,9 +61,10 @@ export async function deleteSite(siteId: string): Promise<void> {
   if (!res.ok) throw new Error(`Failed to delete site: ${res.statusText}`)
 }
 
-export async function deleteWorker(workerId: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/workers/${workerId}`, { method: 'DELETE' })
-  if (!res.ok) throw new Error(`Failed to delete worker: ${res.statusText}`)
+export async function getLatestHeat(siteId: string): Promise<HeatSnapshot | null> {
+  const res = await fetch(`${API_BASE}/heat?site_id=${siteId}`)
+  if (!res.ok) throw new Error(`Failed to fetch heat snapshot: ${res.statusText}`)
+  return res.json()
 }
 
 export async function getMicroclimateAnalysis(siteId: string): Promise<any> {
@@ -106,10 +73,51 @@ export async function getMicroclimateAnalysis(siteId: string): Promise<any> {
   return res.json()
 }
 
-
-
 export async function getHourlyForecast(siteId: string): Promise<HourlyForecastResponse> {
-  const res = await fetch(`${API_BASE}/heat/forecast?site_id=${siteId}`)
+  const res = await fetch(`${API_BASE}/heat/hourly-forecast?site_id=${siteId}`)
   if (!res.ok) throw new Error(`Failed to fetch hourly forecast: ${res.statusText}`)
+  return res.json()
+}
+
+export async function getAlerts(siteId?: string, limit?: number): Promise<ActionLog[]> {
+  const params = new URLSearchParams()
+  if (siteId) params.append('site_id', siteId)
+  if (limit) params.append('limit', String(limit))
+  const queryString = params.toString() ? `?${params.toString()}` : ''
+  const url = `${API_BASE}/alerts${queryString}`
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`Failed to fetch alerts: ${res.statusText}`)
+  return res.json()
+}
+
+export async function triggerCheck(siteId: string, forceExtreme = false): Promise<TriggerCheckResponse> {
+  const url = `${API_BASE}/internal/trigger-check?site_id=${siteId}&force_extreme=${forceExtreme}`
+  const res = await fetch(url, { method: 'POST' })
+  if (!res.ok) throw new Error(`Trigger check failed: ${res.statusText}`)
+  return res.json()
+}
+
+export async function triggerDirectCall(payload: { phone_number: string; worker_name: string }): Promise<any> {
+  const res = await fetch(`${API_BASE}/internal/calle/direct-call`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({ detail: res.statusText }))
+    throw new Error(errData.detail || `HTTP ${res.status}`)
+  }
+  return res.json()
+}
+
+export async function getCalleCallStatus(callId: string): Promise<any> {
+  const res = await fetch(`${API_BASE}/internal/calle/call/${callId}`)
+  if (!res.ok) throw new Error(`Failed to fetch call status: ${res.statusText}`)
+  return res.json()
+}
+
+export async function getFortyGuardUsage(): Promise<any> {
+  const res = await fetch(`${API_BASE}/internal/fortyguard/usage`)
+  if (!res.ok) throw new Error(`Failed to fetch FortyGuard usage: ${res.statusText}`)
   return res.json()
 }
