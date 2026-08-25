@@ -1,0 +1,22 @@
+name: ThermaShift AI 24/7 Warm-Up Engine
+
+on:
+  schedule:
+    - cron: '*/5 * * * *' # Pings every 5 minutes 24/7
+  workflow_dispatch:
+
+jobs:
+  warm_up:
+    name: Keep Backend Warm & Ready for Judges
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Health & Telemetry Endpoint
+        run: |
+          echo "Pinging ThermaShift AI Production API..."
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://thermashift-ai.vercel.app/api/health)
+          echo "Status: $HTTP_CODE"
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "ThermaShift AI Backend is 100% WARM and LIVE for Judges!"
+          else
+            echo "Warning: Response code $HTTP_CODE"
+          fi
