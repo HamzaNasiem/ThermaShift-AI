@@ -1,25 +1,43 @@
-"""Async SQLAlchemy engine and session factory for Supabase / Postgres."""
+"""Async SQLAlchemy engine and session factory with automatic fallback."""
 
+import os
+import logging
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 from app.core.config import settings
 
-connect_args = {}
-engine_kwargs = {
-    "echo": settings.environment == "development",
-}
+logger = logging.getLogger(__name__)
 
-if settings.database_url.startswith("sqlite"):
-    connect_args = {"check_same_thread": False}
-else:
-    engine_kwargs["pool_size"] = 5
-    engine_kwargs["max_overflow"] = 10
+db_url = settings.database_url
 
-engine = create_async_engine(
-    settings.database_url,
-    connect_args=connect_args,
-    **engine_kwargs,
-)
+# On serverless (Vercel / Lambda), ensure writable SQLite or Postgres
+if os.environ.get("VERCEL") and db_url.startswith("sqlite") and not db_url.startswith("sqlite+aiosqlite:////tmp/"):
+    db_url = "sqlite+aiosqlite:////tmp/thermashift.db"
+
+try:
+    connect_args = {}
+    engine_kwargs = {
+        "echo": settings.environment == "development",
+    }
+
+    if db_url.startswith("sqlite"):
+        connect_args = {"check_same_thread": False}
+    else:
+        engine_kwargs["pool_size"] = 5
+        engine_kwargs["max_overflow"] = 10
+
+    engine = create_async_engine(
+        db_url,
+        connect_args=connect_args,
+        **engine_kwargs,
+    )
+except Exception as e:
+    logger.warning(f"Failed to create engine for {db_url}: {e}. Falling back to SQLite.")
+    db_url = "sqlite+aiosqlite:////tmp/thermashift.db"
+    engine = create_async_engine(
+        db_url,
+        connect_args={"check_same_thread": False},
+    )
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,
