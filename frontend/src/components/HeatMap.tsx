@@ -322,7 +322,7 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
   }, [site, riskLevel, snapshot, microclimate, granularity, opacity, showMesh, showEscapeVector])
 
   return (
-    <div className="flex flex-col h-full bg-[#ffffff] text-[#141414] rounded-2xl overflow-hidden border border-[#e5e5e5] shadow-sm relative font-sans">
+    <div className="flex flex-col h-full bg-[#ffffff] text-[#141414] rounded-2xl overflow-hidden border border-[#e5e5e5] shadow-sm relative isolate z-0 font-sans">
       
       {/* Top Map Control Bar */}
       <div className="p-3 bg-[#ffffff] border-b border-[#e5e5e5] flex flex-wrap items-center justify-between gap-3 text-xs">

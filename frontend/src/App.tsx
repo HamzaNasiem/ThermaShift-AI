@@ -24,7 +24,7 @@ function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
 
 function Header() {
   return (
-    <header className="bg-[#ffffff] border-b border-[#e5e5e5] sticky top-0 z-50 shadow-sm backdrop-blur-md bg-opacity-95">
+    <header className="bg-[#ffffff] border-b border-[#e5e5e5] sticky top-0 z-[1100] shadow-sm backdrop-blur-md bg-opacity-95">
       <div className="max-w-[1600px] mx-auto px-6 h-14 flex items-center justify-between">
         {/* Custom Brand Logo */}
         <Link to="/" className="hover:opacity-90 transition-opacity">
