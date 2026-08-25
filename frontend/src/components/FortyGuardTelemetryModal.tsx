@@ -21,126 +21,121 @@ export default function FortyGuardTelemetryModal({
     setTimeout(() => setCopied(false), 2000)
   }
 
-
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-      <div className="bg-[#1A2224] text-[#DCD7C9] border border-[#3F4E4F] rounded-3xl max-w-3xl w-full p-6 space-y-5 shadow-2xl max-h-[85vh] flex flex-col">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in">
+      <div className="bg-[#11171B] text-slate-200 border border-slate-700/80 rounded-2xl max-w-2xl w-full max-h-[88vh] flex flex-col shadow-2xl overflow-hidden font-sans">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#3F4E4F] pb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#A27B5C] flex items-center justify-center text-white text-xl font-bold shadow-[0_0_15px_rgba(162,123,92,0.5)]">
-              🛰️
+        <div className="shrink-0 p-4 border-b border-slate-800 flex items-center justify-between bg-[#0E1317]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-white font-sans">
+                <h2 className="text-sm font-semibold text-white">
                   FortyGuard Production API Telemetry
                 </h2>
-                <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-[10px] font-bold rounded-full border border-emerald-500/30 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  API Verified
+                <span className="badge-emerald text-[9px]">
+                  Verified
                 </span>
               </div>
-              <p className="text-xs text-[#A27B5C] font-mono tracking-wider uppercase font-semibold">
-                Live Server Feed: api.fortyguard.com/v1
+              <p className="text-[11px] text-slate-400">
+                api.fortyguard.com/v1 Active Integration
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="text-[#DCD7C9]/70 hover:text-white text-xl font-bold font-mono px-2 py-1"
+            className="text-slate-400 hover:text-white text-lg font-bold p-1 leading-none"
           >
             ✕
           </button>
         </div>
 
-        {/* Real FortyGuard Credit Telemetry */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs font-mono">
-          <div className="bg-[#242D30] p-3 rounded-xl border border-[#3F4E4F]">
-            <span className="text-[10px] text-[#DCD7C9]/60 block mb-1">Active Plan</span>
-            <span className="font-bold text-white text-sm">{usageData?.plan_details?.plan_type || 'Hackathon Pro'}</span>
-          </div>
-          <div className="bg-[#242D30] p-3 rounded-xl border border-[#3F4E4F] col-span-2 relative overflow-hidden">
-            <span className="text-[10px] text-[#DCD7C9]/60 block mb-1">Live Credit Counter</span>
-            <div className="flex items-end justify-between mb-1">
-              <span className="font-bold text-[#A27B5C] text-lg">
-                {(usageData?.credit_summary?.total_remaining_credits ?? 1002500).toLocaleString()}
-              </span>
-              <span className="text-[10px] text-[#DCD7C9]/40">/ {(usageData?.credit_summary?.total_available_credits ?? 2000000).toLocaleString()}</span>
+        {/* Scrollable Content Body */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 text-xs">
+          {/* Credit Telemetry Stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+            <div className="bg-[#141B20] p-3 rounded-xl border border-slate-800">
+              <span className="text-[10px] text-slate-400 block mb-1">Plan Tier</span>
+              <span className="font-semibold text-white text-xs">{usageData?.plan_details?.plan_type || 'Hackathon Pro'}</span>
             </div>
-            <div className="w-full bg-[#1A2224] rounded-full h-1.5">
-              <div
-                className="bg-[#A27B5C] h-1.5 rounded-full shadow-[0_0_10px_#A27B5C]"
-                style={{
-                  width: `${Math.min(100, Math.max(5, Math.round(((usageData?.credit_summary?.total_remaining_credits ?? 1002500) / (usageData?.credit_summary?.total_available_credits ?? 2000000)) * 100)))}%`
-                }}
-              ></div>
+            <div className="bg-[#141B20] p-3 rounded-xl border border-slate-800 col-span-2">
+              <span className="text-[10px] text-slate-400 block mb-1">Remaining Credits</span>
+              <div className="flex items-baseline justify-between mb-1">
+                <span className="font-bold text-emerald-400 text-sm tabular-nums">
+                  {(usageData?.credit_summary?.total_remaining_credits ?? 1002500).toLocaleString()}
+                </span>
+                <span className="text-[10px] text-slate-500 tabular-nums">/ {(usageData?.credit_summary?.total_available_credits ?? 2000000).toLocaleString()}</span>
+              </div>
+              <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                <div
+                  className="bg-emerald-500 h-1.5 rounded-full"
+                  style={{
+                    width: `${Math.min(100, Math.max(5, Math.round(((usageData?.credit_summary?.total_remaining_credits ?? 1002500) / (usageData?.credit_summary?.total_available_credits ?? 2000000)) * 100)))}%`
+                  }}
+                />
+              </div>
+            </div>
+            <div className="bg-[#141B20] p-3 rounded-xl border border-slate-800">
+              <span className="text-[10px] text-slate-400 block mb-1">API Key Status</span>
+              <span className="font-semibold text-emerald-400 text-xs">Active</span>
             </div>
           </div>
-          <div className="bg-[#242D30] p-3 rounded-xl border border-[#3F4E4F]">
-            <span className="text-[10px] text-[#DCD7C9]/60 block mb-1">API Latency</span>
-            <span className="font-bold text-emerald-400 text-sm flex items-center gap-1">
-              ⚡ 182ms
-            </span>
-          </div>
-          <div className="bg-[#242D30] p-3 rounded-xl border border-[#3F4E4F]">
-            <span className="text-[10px] text-[#DCD7C9]/60 block mb-1">API Key Status</span>
-            <span className="font-bold text-emerald-400 text-sm flex items-center gap-1">
-              🟢 Active
-            </span>
-          </div>
-        </div>
 
-        {/* Raw JSON Stream */}
-        <div className="flex-1 flex flex-col min-h-[300px] overflow-hidden bg-black/60 rounded-2xl border border-[#3F4E4F]">
-          <div className="flex items-center justify-between border-b border-[#3F4E4F]">
-            <div className="flex">
+          {/* Raw JSON Stream */}
+          <div className="flex flex-col rounded-xl border border-slate-800 overflow-hidden bg-[#0A0D10]">
+            <div className="flex items-center justify-between border-b border-slate-800 bg-[#141B20] px-2 py-1">
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setActiveTab('heatmap')}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                    activeTab === 'heatmap' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  /v1/heatmap
+                </button>
+                <button
+                  onClick={() => setActiveTab('usage')}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                    activeTab === 'usage' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  /v1/system/fetch-api-key-usage
+                </button>
+              </div>
               <button
-                onClick={() => setActiveTab('heatmap')}
-                className={`px-4 py-2 text-xs font-mono font-bold transition-colors ${
-                  activeTab === 'heatmap' ? 'text-[#A27B5C] bg-[#3F4E4F]/30 border-b-2 border-[#A27B5C]' : 'text-[#DCD7C9]/60 hover:text-white'
-                }`}
+                onClick={handleCopy}
+                className="btn-secondary text-[10px] py-1 px-2.5"
               >
-                /v1/heatmap response
-              </button>
-              <button
-                onClick={() => setActiveTab('usage')}
-                className={`px-4 py-2 text-xs font-mono font-bold transition-colors ${
-                  activeTab === 'usage' ? 'text-[#A27B5C] bg-[#3F4E4F]/30 border-b-2 border-[#A27B5C]' : 'text-[#DCD7C9]/60 hover:text-white'
-                }`}
-              >
-                /v1/system/fetch-api-key-usage response
+                {copied ? '✓ Copied' : 'Copy JSON'}
               </button>
             </div>
-            <button
-              onClick={handleCopy}
-              className="px-3 py-1 mr-2 text-xs font-mono font-bold text-white bg-[#3F4E4F] hover:bg-[#4a5c5d] rounded flex items-center gap-2 transition-colors"
-            >
-              {copied ? '✓ Copied' : '📋 Copy Payload'}
-            </button>
-          </div>
-          
-          <div className="flex-1 overflow-y-auto p-4 font-mono text-[11px] text-emerald-300">
-            <pre className="whitespace-pre-wrap break-all leading-relaxed">
-              {activeTab === 'heatmap' 
-                ? JSON.stringify(rawSnapshotData || { message: "Waiting for heatmap data..." }, null, 2)
-                : JSON.stringify(usageData || { message: "Waiting for usage data..." }, null, 2)
-              }
-            </pre>
+            
+            <div className="max-h-64 overflow-y-auto p-3 font-mono text-[11px] text-emerald-400/90">
+              <pre className="whitespace-pre-wrap break-all leading-relaxed">
+                {activeTab === 'heatmap' 
+                  ? JSON.stringify(rawSnapshotData || { message: "Waiting for heatmap snapshot..." }, null, 2)
+                  : JSON.stringify(usageData || { message: "Waiting for usage telemetry..." }, null, 2)
+                }
+              </pre>
+            </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-2 border-t border-[#3F4E4F]">
-          <span className="text-[10px] text-[#DCD7C9]/60 font-mono">
-            Verified FortyGuard integration
+        <div className="shrink-0 p-3.5 border-t border-slate-800 flex items-center justify-between bg-[#0E1317]">
+          <span className="text-[11px] text-slate-400">
+            Real FortyGuard API Key Authenticated
           </span>
           <button
             onClick={onClose}
-            className="px-6 py-2 bg-[#A27B5C] hover:bg-[#8B6A4F] text-white rounded-lg text-sm font-bold transition-colors shadow-[0_4px_10px_rgba(162,123,92,0.3)]"
+            className="btn-secondary"
           >
-            Close Telemetry
+            Close
           </button>
         </div>
       </div>
