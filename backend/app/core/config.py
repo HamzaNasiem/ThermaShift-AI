@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     # Database
-    database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/thermashift"
+    database_url: str = "sqlite+aiosqlite:///thermashift.db"
 
     # FortyGuard
     fortyguard_api_key: str = "489e4282aa24d9c7d074195751e3faf6"

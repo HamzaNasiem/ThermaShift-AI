@@ -1,4 +1,4 @@
-﻿import asyncio
+import asyncio
 import uuid
 from sqlalchemy import select, delete
 from app.core.database import AsyncSessionLocal
@@ -72,6 +72,11 @@ GLOBAL_SITES = [
 ]
 
 async def seed_sites():
+    from app.core.database import engine, Base
+    import app.models  # load all models
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
     async with AsyncSessionLocal() as session:
         print("Clearing and re-seeding top global industrial sites...")
         

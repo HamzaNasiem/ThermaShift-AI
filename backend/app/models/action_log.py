@@ -2,18 +2,17 @@
 
 import uuid
 from datetime import datetime
-from sqlalchemy import String, DateTime, ForeignKey, func, CheckConstraint
+from sqlalchemy import String, DateTime, ForeignKey, Uuid, func, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import UUID
 from app.core.database import Base
 
 
 class ActionLog(Base):
     __tablename__ = "action_logs"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    worker_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("workers.id", ondelete="CASCADE"), nullable=False)
-    heat_snapshot_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("heat_snapshots.id", ondelete="SET NULL"), nullable=True)
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    worker_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("workers.id", ondelete="CASCADE"), nullable=False)
+    heat_snapshot_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, ForeignKey("heat_snapshots.id", ondelete="SET NULL"), nullable=True)
     channel: Mapped[str] = mapped_column(String, nullable=False)  # 'voice' | 'sms'
     provider_ref: Mapped[str | None] = mapped_column(String, nullable=True)  # Retell call_id or Twilio sid
     status: Mapped[str] = mapped_column(String, nullable=False, default="queued")

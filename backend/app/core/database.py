@@ -4,11 +4,21 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from sqlalchemy.orm import DeclarativeBase
 from app.core.config import settings
 
+connect_args = {}
+engine_kwargs = {
+    "echo": settings.environment == "development",
+}
+
+if settings.database_url.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
+else:
+    engine_kwargs["pool_size"] = 5
+    engine_kwargs["max_overflow"] = 10
+
 engine = create_async_engine(
     settings.database_url,
-    echo=settings.environment == "development",
-    pool_size=5,
-    max_overflow=10,
+    connect_args=connect_args,
+    **engine_kwargs,
 )
 
 AsyncSessionLocal = async_sessionmaker(
