@@ -1,6 +1,6 @@
 import type { Site, Worker, HeatSnapshot, ActionLog, TriggerCheckResponse, HourlyForecastResponse } from '../types'
 
-const API_BASE = '/api'
+const API_BASE = String((import.meta as any).env?.VITE_API_BASE || '/api').replace(/\/$/, '')
 
 export async function getSites(): Promise<Site[]> {
   const res = await fetch(`${API_BASE}/sites`)
