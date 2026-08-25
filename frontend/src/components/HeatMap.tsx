@@ -323,49 +323,48 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
 
   return (
     <div className="flex flex-col h-full bg-[#ffffff] text-[#141414] rounded-2xl overflow-hidden border border-[#e5e5e5] shadow-sm relative isolate z-0 font-sans">
-      
-      {/* Top Map Control Bar */}
-      <div className="p-3 bg-[#ffffff] border-b border-[#e5e5e5] flex flex-wrap items-center justify-between gap-3 text-xs">
-        {/* Basemap Switcher */}
-        <div className="flex items-center gap-1 bg-[#f4f4f4] p-1 rounded-xl border border-[#e5e5e5]">
-          <span className="text-[10px] text-slate-500 font-bold px-1.5 uppercase">Basemap:</span>
-          {(['voyager', 'carto_dark', 'satellite'] as const).map((mode) => (
-            <button
-              key={mode}
-              onClick={() => setBasemap(mode)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
-                basemap === mode
-                  ? 'bg-[#141414] text-white shadow-sm'
-                  : 'text-slate-600 hover:text-[#141414]'
-              }`}
-            >
-              {BASEMAP_TILES[mode].name}
-            </button>
-          ))}
-        </div>
+      {/* Map Control Toolbar */}
+      <div className="p-2 sm:p-3 border-b border-[#e5e5e5] bg-[#ffffff] flex flex-wrap items-center justify-between gap-2">
+        {/* Basemap & Resolution Switcher (Scrollable on mobile) */}
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar max-w-full py-0.5">
+          <div className="flex items-center gap-1 bg-[#f4f4f4] p-1 rounded-xl border border-[#e5e5e5] shrink-0">
+            {(['voyager', 'carto_dark', 'satellite'] as const).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => setBasemap(mode)}
+                className={`px-2 py-1 rounded-lg text-[11px] sm:text-xs font-semibold transition-colors shrink-0 ${
+                  basemap === mode
+                    ? 'bg-[#141414] text-white shadow-sm'
+                    : 'text-slate-600 hover:text-[#141414]'
+                }`}
+              >
+                {BASEMAP_TILES[mode].name}
+              </button>
+            ))}
+          </div>
 
-        {/* Granularity Selector */}
-        <div className="flex items-center gap-1 bg-[#f4f4f4] p-1 rounded-xl border border-[#e5e5e5]">
-          <span className="text-[10px] text-slate-500 font-bold px-1.5 uppercase">Resolution:</span>
-          {(['60', '80', '100'] as const).map((g) => (
-            <button
-              key={g}
-              onClick={() => setGranularity(g)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
-                granularity === g
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'text-slate-600 hover:text-[#141414]'
-              }`}
-            >
-              {g}m
-            </button>
-          ))}
+          {/* Granularity Selector */}
+          <div className="flex items-center gap-1 bg-[#f4f4f4] p-1 rounded-xl border border-[#e5e5e5] shrink-0">
+            {(['60', '80', '100'] as const).map((g) => (
+              <button
+                key={g}
+                onClick={() => setGranularity(g)}
+                className={`px-2 py-1 rounded-lg text-[11px] sm:text-xs font-semibold transition-colors shrink-0 ${
+                  granularity === g
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-[#141414]'
+                }`}
+              >
+                {g}m
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Layer Toggles & Opacity Slider */}
-        <div className="flex items-center gap-2.5">
-          <div className="flex items-center gap-1.5 bg-[#f4f4f4] px-2.5 py-1 rounded-xl border border-[#e5e5e5]">
-            <span className="text-[11px] text-slate-600 font-medium">Opacity:</span>
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 bg-[#f4f4f4] px-2 py-1 rounded-xl border border-[#e5e5e5]">
+            <span className="text-[10px] sm:text-[11px] text-slate-600 font-medium">Opacity:</span>
             <input
               type="range"
               min="0.3"
@@ -373,14 +372,14 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
               step="0.05"
               value={opacity}
               onChange={(e) => setOpacity(parseFloat(e.target.value))}
-              className="w-16 h-1 bg-slate-300 rounded-lg cursor-pointer accent-[#141414]"
+              className="w-12 sm:w-16 h-1 bg-slate-300 rounded-lg cursor-pointer accent-[#141414]"
             />
-            <span className="text-[11px] text-[#141414] font-bold tabular-nums">{Math.round(opacity * 100)}%</span>
+            <span className="text-[10px] sm:text-[11px] text-[#141414] font-bold tabular-nums">{Math.round(opacity * 100)}%</span>
           </div>
 
           <button
             onClick={() => setShowMesh(!showMesh)}
-            className={`px-3 py-1.5 rounded-xl font-semibold transition-colors text-xs border ${
+            className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl font-semibold transition-colors text-[11px] sm:text-xs border ${
               showMesh
                 ? 'bg-[#141414] text-white border-[#141414]'
                 : 'bg-[#f4f4f4] text-slate-600 border-[#e5e5e5]'
@@ -391,7 +390,7 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
 
           <button
             onClick={() => setShowEscapeVector(!showEscapeVector)}
-            className={`px-3 py-1.5 rounded-xl font-semibold transition-colors text-xs border ${
+            className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl font-semibold transition-colors text-[11px] sm:text-xs border ${
               showEscapeVector
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                 : 'bg-[#f4f4f4] text-slate-600 border-[#e5e5e5]'
@@ -403,12 +402,12 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
       </div>
 
       {/* Leaflet Map Canvas */}
-      <div className="relative flex-1 min-h-[440px] w-full">
+      <div className="relative flex-1 min-h-[340px] sm:min-h-[440px] h-[360px] sm:h-[480px] w-full">
         <div ref={containerRef} className="w-full h-full" />
 
         {/* Selected Point Telemetry Modal Card */}
         {selectedPoint && (
-          <div className="absolute top-4 right-4 z-[1000] bg-[#ffffff]/95 backdrop-blur-md border border-slate-200 text-[#141414] rounded-2xl p-4 w-72 shadow-xl space-y-3 animate-fade-in">
+          <div className="absolute top-2 sm:top-4 right-2 sm:right-4 z-[1000] bg-[#ffffff]/95 backdrop-blur-md border border-slate-200 text-[#141414] rounded-2xl p-3 sm:p-4 w-[calc(100%-1rem)] sm:w-72 shadow-xl space-y-2.5 sm:space-y-3 animate-fade-in">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -424,14 +423,14 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
               </button>
             </div>
 
-            <div className="space-y-2 text-xs">
+            <div className="space-y-1.5 sm:space-y-2 text-xs">
               <div className="flex justify-between bg-[#f9fafb] p-2 rounded-lg border border-slate-100">
                 <span className="text-slate-500 font-medium">Measured Temp:</span>
                 <span className="font-black text-rose-600 tabular-nums">{selectedPoint.tempF}°F ({selectedPoint.tempC}°C)</span>
               </div>
               <div className="flex justify-between bg-[#f9fafb] p-2 rounded-lg border border-slate-100">
                 <span className="text-slate-500 font-medium">GPS Coordinates:</span>
-                <span className="font-mono text-slate-700 font-semibold text-[11px]">{selectedPoint.lat}, {selectedPoint.lng}</span>
+                <span className="font-mono text-slate-700 font-semibold text-[10px] sm:text-[11px]">{selectedPoint.lat}, {selectedPoint.lng}</span>
               </div>
               <div className="flex justify-between bg-[#f9fafb] p-2 rounded-lg border border-slate-100">
                 <span className="text-slate-500 font-medium">Spatial Sector:</span>
@@ -453,27 +452,27 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
         )}
 
         {/* Spectral Temperature Legend Bar */}
-        <div className="absolute bottom-4 left-4 z-[999] bg-[#ffffff]/95 backdrop-blur-md p-3 rounded-2xl border border-slate-200 shadow-xl text-xs space-y-2 max-w-xs">
+        <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 z-[999] bg-[#ffffff]/95 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-slate-200 shadow-xl text-xs space-y-1.5 sm:space-y-2 max-w-[calc(100%-1rem)] sm:max-w-xs">
           <div className="flex items-center justify-between text-[#141414] font-bold">
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-1.5 text-[11px] sm:text-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
-              FortyGuard Spatial Heat Gradient
+              FortyGuard Heat Gradient
             </span>
             <span className="text-slate-500 text-[10px] font-bold">°F</span>
           </div>
 
-          <div className="w-full h-2.5 rounded-full overflow-hidden shadow-inner bg-gradient-to-r from-[#313695] via-[#ffffbf] via-[#fdae61] to-[#67001f]" />
+          <div className="w-full h-2 rounded-full overflow-hidden shadow-inner bg-gradient-to-r from-[#313695] via-[#ffffbf] via-[#fdae61] to-[#67001f]" />
 
-          <div className="flex items-center justify-between text-[10px] text-slate-600 font-semibold">
-            <span>&lt;84°F Tmin (Coolest)</span>
-            <span>98°F Tmean</span>
-            <span>&gt;118°F Tmax (Peak Hotspot)</span>
+          <div className="flex items-center justify-between text-[9px] sm:text-[10px] text-slate-600 font-semibold gap-1">
+            <span className="truncate">&lt;84° Tmin</span>
+            <span className="truncate">98° Tmean</span>
+            <span className="truncate">&gt;118° Tmax</span>
           </div>
         </div>
 
         {/* Live GPS Cursor Box */}
         {cursorCoords && (
-          <div className="absolute bottom-4 right-4 z-[999] bg-[#ffffff]/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] text-slate-700 font-mono font-semibold shadow-md">
+          <div className="hidden sm:block absolute bottom-4 right-4 z-[999] bg-[#ffffff]/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-200 text-[11px] text-slate-700 font-mono font-semibold shadow-md">
             {cursorCoords.lat}, {cursorCoords.lng}
           </div>
         )}

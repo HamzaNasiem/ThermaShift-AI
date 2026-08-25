@@ -56,37 +56,37 @@ export default function MicroclimateTelemetryCard({ data, loading, onBroadcastCl
       </div>
 
       {/* 3 Stat Metrics */}
-      <div className="grid grid-cols-3 gap-2 text-center">
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-center">
         {/* 1. Peak Hotspot */}
-        <div className="p-2.5 rounded-xl bg-[#f9fafb] border border-rose-200">
-          <span className="text-[10px] font-semibold text-slate-600 block mb-0.5">Peak Hotspot (Tmax)</span>
-          <div className="text-xl font-black text-rose-600 tracking-tight tabular-nums">
+        <div className="p-2 sm:p-2.5 rounded-xl bg-[#f9fafb] border border-rose-200">
+          <span className="text-[9px] sm:text-[10px] font-semibold text-slate-600 block mb-0.5 truncate">Peak Hotspot</span>
+          <div className="text-base sm:text-xl font-black text-rose-600 tracking-tight tabular-nums">
             {surfaceTemp}°F
           </div>
-          <span className="text-[9px] text-rose-700 font-bold">
-            +{uhiDelta}°F Solar Penalty
+          <span className="text-[8px] sm:text-[9px] text-rose-700 font-bold block truncate">
+            +{uhiDelta}°F Solar
           </span>
         </div>
 
         {/* 2. Mean Air Temp */}
-        <div className="p-2.5 rounded-xl bg-[#f9fafb] border border-slate-200">
-          <span className="text-[10px] font-semibold text-slate-600 block mb-0.5">Site Mean (Tmean)</span>
-          <div className="text-xl font-black text-amber-600 tracking-tight tabular-nums">
+        <div className="p-2 sm:p-2.5 rounded-xl bg-[#f9fafb] border border-slate-200">
+          <span className="text-[9px] sm:text-[10px] font-semibold text-slate-600 block mb-0.5 truncate">Site Mean</span>
+          <div className="text-base sm:text-xl font-black text-amber-600 tracking-tight tabular-nums">
             {ambientTemp}°F
           </div>
-          <span className="text-[9px] text-slate-500 font-medium">
-            {solarRad} W/m² Solar
+          <span className="text-[8px] sm:text-[9px] text-slate-500 font-medium block truncate">
+            {solarRad} W/m²
           </span>
         </div>
 
         {/* 3. Coolest Measured Sector */}
-        <div className="p-2.5 rounded-xl bg-[#f9fafb] border border-emerald-200">
-          <span className="text-[10px] font-semibold text-slate-600 block mb-0.5">Coolest Sector (Tmin)</span>
-          <div className="text-xl font-black text-emerald-600 tracking-tight tabular-nums">
+        <div className="p-2 sm:p-2.5 rounded-xl bg-[#f9fafb] border border-emerald-200">
+          <span className="text-[9px] sm:text-[10px] font-semibold text-slate-600 block mb-0.5 truncate">Cool Sector</span>
+          <div className="text-base sm:text-xl font-black text-emerald-600 tracking-tight tabular-nums">
             {coolSectorTemp}°F
           </div>
-          <span className="text-[9px] text-emerald-700 font-bold">
-            -{reliefDelta}°F Optimal Zone
+          <span className="text-[8px] sm:text-[9px] text-emerald-700 font-bold block truncate">
+            -{reliefDelta}°F Relief
           </span>
         </div>
       </div>

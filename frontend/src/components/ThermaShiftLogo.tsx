@@ -11,12 +11,12 @@ export default function ThermaShiftLogo({
 }: ThermaShiftLogoProps) {
   const iconDimensions = {
     sm: 'w-6 h-6',
-    md: 'w-8 h-8',
-    lg: 'w-10 h-10',
+    md: 'w-7 h-7 sm:w-8 sm:h-8',
+    lg: 'w-9 h-9 sm:w-10 sm:h-10',
   }[size]
 
   return (
-    <div className="flex items-center gap-2.5 select-none">
+    <div className="flex items-center gap-2 select-none shrink-0">
       {/* Custom Vector Emblem */}
       <div className={`${iconDimensions} shrink-0 rounded-xl overflow-hidden shadow-sm border border-slate-200 relative bg-[#ffffff] flex items-center justify-center`}>
         <svg viewBox="0 0 64 64" className="w-full h-full p-1" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -56,12 +56,12 @@ export default function ThermaShiftLogo({
 
       {/* Brand Typography & FortyGuard OS Pill */}
       {showText && (
-        <div className="flex items-center gap-2">
-          <span className="font-bold text-[#141414] text-base tracking-tight leading-none">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <span className="font-bold text-[#141414] text-sm sm:text-base tracking-tight leading-none">
             Therma<span className="text-emerald-600">Shift</span>
           </span>
           {showBadge && (
-            <span className="text-[10px] text-slate-700 font-semibold px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 tracking-normal">
+            <span className="hidden sm:inline-flex text-[10px] text-slate-700 font-semibold px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 tracking-normal whitespace-nowrap">
               FortyGuard OS
             </span>
           )}

@@ -46,19 +46,19 @@ export default function Sites() {
   return (
     <div className="space-y-6 font-sans">
       {/* Header Bar */}
-      <div className="card-surface p-5 flex flex-wrap items-center justify-between gap-4">
+      <div className="card-surface p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5">
         <div>
-          <h1 className="text-base font-bold text-[#141414]">
+          <h1 className="text-sm sm:text-base font-bold text-[#141414]">
             Registered Geo-Fenced Work Sites
           </h1>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">
+          <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">
             Hyperlocal Industrial & Construction Polygons Monitored 24/7 by FortyGuard AI
           </p>
         </div>
 
         <button
           onClick={() => setShowModal(true)}
-          className="btn-primary"
+          className="btn-primary w-full sm:w-auto"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

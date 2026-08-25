@@ -85,22 +85,22 @@ export default function Workers() {
   return (
     <div className="space-y-6 font-sans">
       {/* Top Banner */}
-      <div className="card-surface p-5 flex flex-wrap items-center justify-between gap-4">
+      <div className="card-surface p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5">
         <div>
-          <h1 className="text-base font-bold text-[#141414]">
+          <h1 className="text-sm sm:text-base font-bold text-[#141414]">
             Enrolled Field Personnel Roster
           </h1>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">
+          <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">
             Workers Receiving Autonomous Voice & SMS Alerts During Extreme Heat
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="grid grid-cols-1 sm:flex sm:items-center gap-2 w-full sm:w-auto">
           <button
             onClick={() => setDirectCallTarget({ name: '', phone: '' })}
-            className="btn-secondary"
+            className="btn-secondary w-full sm:w-auto"
           >
-            <svg className="w-3.5 h-3.5 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-3.5 h-3.5 text-sky-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
             </svg>
             <span>Test CALL-E Voice Call</span>
@@ -108,9 +108,9 @@ export default function Workers() {
 
           <button
             onClick={() => setShowEnrollModal(true)}
-            className="btn-primary"
+            className="btn-primary w-full sm:w-auto"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             <span>Enroll New Worker</span>
@@ -119,13 +119,13 @@ export default function Workers() {
       </div>
 
       {/* Site Selector Toolbar */}
-      <div className="card-surface p-4 flex flex-wrap items-center justify-between gap-4 text-xs">
-        <div className="flex items-center gap-2.5">
-          <span className="text-slate-500 font-semibold">Active Work Site:</span>
+      <div className="card-surface p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2 max-w-full">
+          <span className="text-slate-500 font-semibold shrink-0">Work Site:</span>
           <select
             value={selectedSiteId}
             onChange={(e) => setSelectedSiteId(e.target.value)}
-            className="bg-[#f4f4f4] text-[#141414] border border-[#e5e5e5] rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-none focus:border-slate-400 cursor-pointer"
+            className="bg-[#f4f4f4] text-[#141414] border border-[#e5e5e5] rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:border-slate-400 cursor-pointer max-w-[200px] sm:max-w-xs truncate"
           >
             {sites.map((s) => (
               <option key={s.id} value={s.id}>{s.name}</option>
@@ -134,7 +134,7 @@ export default function Workers() {
         </div>
 
         <div className="text-slate-600 text-xs font-medium">
-          Personnel on Site: <span className="font-bold text-[#141414] text-sm">{workers.length}</span>
+          Personnel on Site: <span className="font-bold text-[#141414] text-sm tabular-nums">{workers.length}</span>
         </div>
       </div>
 
