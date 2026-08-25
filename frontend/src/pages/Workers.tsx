@@ -261,14 +261,13 @@ export default function Workers() {
               </div>
 
               <div>
-                <label className="block text-[10px] text-slate-500 font-semibold uppercase mb-1">Voice Language</label>
+                <label className="block text-[10px] text-slate-500 font-semibold uppercase mb-1">Voice Dispatch Language</label>
                 <select
                   value={lang}
                   onChange={(e) => setLang(e.target.value as any)}
                   className="w-full bg-[#f9fafb] border border-slate-200 text-[#141414] rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-slate-400"
                 >
-                  <option value="en">English (Professional Dispatcher)</option>
-                  <option value="ur">Urdu (Regional Bilingual)</option>
+                  <option value="en">English (International Standard Dispatch)</option>
                 </select>
               </div>
 

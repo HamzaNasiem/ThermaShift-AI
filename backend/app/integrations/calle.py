@@ -34,7 +34,7 @@ def build_task_prompt(to_number: str, worker_name: str, site_name: str, temp_f_s
 
 
 async def trigger_outbound_call(worker, site, snapshot) -> str:
-    """Trigger a real CALL-E outbound call to a worker with bilingual task instructions
+    """Trigger a real CALL-E outbound call to a worker with professional English task instructions
     and structured verification schema.
     Returns the call_id (e.g. 'call_91-GpTzKXNBvpPox8NN4gw').
     """
@@ -44,11 +44,10 @@ async def trigger_outbound_call(worker, site, snapshot) -> str:
         raise ValueError("CALLE_API_KEY is not configured in .env")
 
     to_number = format_e164(worker.phone_number)
-    preferred_lang = getattr(worker, "preferred_language", "ur") or "ur"
-    language = preferred_lang if preferred_lang in ("ur", "en") else "ur"
+    language = "en"
     temp_f_str = str(int(round(float(snapshot.temperature_f))))
 
-    task_instruction = build_task_prompt(to_number, worker.name, site.name, temp_f_str, language)
+    task_instruction = build_task_prompt(to_number, worker.name, site.name, temp_f_str, "en")
 
     payload = {
         "task": task_instruction,
