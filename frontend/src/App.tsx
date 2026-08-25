@@ -4,6 +4,8 @@ import Sites from './pages/Sites'
 import Workers from './pages/Workers'
 import ErrorBoundary from './components/ErrorBoundary'
 
+import ThermaShiftLogo from './components/ThermaShiftLogo'
+
 function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
   const location = useLocation()
   const active = location.pathname === to
@@ -25,22 +27,10 @@ function Header() {
   return (
     <header className="bg-[#0E1317] border-b border-slate-800/80 sticky top-0 z-50 backdrop-blur-md bg-opacity-90">
       <div className="max-w-[1600px] mx-auto px-6 h-14 flex items-center justify-between">
-        {/* Brand Logo */}
-        <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-bold text-sm shadow-inner">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-white text-sm tracking-tight">
-              ThermaShift
-            </span>
-            <span className="text-[10px] text-emerald-400/90 font-medium px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
-              FortyGuard OS
-            </span>
-          </div>
-        </div>
+        {/* Custom Brand Logo */}
+        <Link to="/" className="hover:opacity-90 transition-opacity">
+          <ThermaShiftLogo size="md" />
+        </Link>
 
         {/* Navigation Tabs */}
         <nav className="flex items-center gap-1 bg-[#141B20] p-1 rounded-xl border border-slate-800/70">
