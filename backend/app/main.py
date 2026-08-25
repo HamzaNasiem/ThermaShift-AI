@@ -21,7 +21,22 @@ from app.models.heat_snapshot import HeatSnapshot
 from app.models.action_log import ActionLog
 from sqlalchemy import select
 
+import httpx
+
 _poller_task: asyncio.Task | None = None
+_keepalive_task: asyncio.Task | None = None
+
+
+async def keep_alive_self_ping():
+    """Self-ping loop every 4 minutes to guarantee inbound HTTP traffic and zero spin-down on Render."""
+    while True:
+        try:
+            await asyncio.sleep(240)  # Ping every 4 minutes
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.get("https://thermashift-ai.onrender.com/health")
+                logger.info(f"Keep-Alive self-ping: status {resp.status_code}")
+        except Exception as e:
+            logger.debug(f"Self-ping notice: {e}")
 
 
 async def auto_seed_if_empty():
@@ -45,18 +60,17 @@ async def auto_seed_if_empty():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Start background poller and DB init on startup, cancel on shutdown."""
-    global _poller_task
+    global _poller_task, _keepalive_task
     await auto_seed_if_empty()
     if settings.environment != "testing":
         _poller_task = asyncio.create_task(poll_loop())
-        logger.info("ThermaShift AI backend started")
+        _keepalive_task = asyncio.create_task(keep_alive_self_ping())
+        logger.info("ThermaShift AI backend started with 24/7 background worker & keep-alive engine")
     yield
     if _poller_task:
         _poller_task.cancel()
-        try:
-            await _poller_task
-        except asyncio.CancelledError:
-            pass
+    if _keepalive_task:
+        _keepalive_task.cancel()
     logger.info("ThermaShift AI backend shut down")
 
 

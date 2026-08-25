@@ -3,8 +3,9 @@
 # 🌡️ ThermaShift AI
 ### Autonomous Hyperlocal Heat-Safety OS for Outdoor Workforces
 
-[![Live Production](https://img.shields.io/badge/Live_App-thermashift--ai.vercel.app-00DC82?style=for-the-badge&logo=vercel&logoColor=white)](https://thermashift-ai.vercel.app)
-[![API Engine](https://img.shields.io/badge/FastAPI-Python_3.12-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://thermashift-ai.vercel.app/api/health)
+[![Live Frontend](https://img.shields.io/badge/Frontend-thermashift--ai.vercel.app-00DC82?style=for-the-badge&logo=vercel&logoColor=white)](https://thermashift-ai.vercel.app)
+[![API Engine](https://img.shields.io/badge/Backend-thermashift--ai.onrender.com-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://thermashift-ai.onrender.com)
+[![Swagger Docs](https://img.shields.io/badge/Swagger_Docs-API_Reference-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://thermashift-ai.onrender.com/docs)
 [![Database](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
 [![Thermal Data](https://img.shields.io/badge/FortyGuard-Hyperlocal_API-FF6B6B?style=for-the-badge)](https://fortyguard.com)
 [![Voice AI](https://img.shields.io/badge/CALL--E-Voice_Telephony-4D77FF?style=for-the-badge)](https://heycall-e.com)
@@ -14,7 +15,7 @@
 
 **ThermaShift AI** is an enterprise-grade, autonomous environmental safety platform that protects outdoor industrial and agricultural personnel from fatal heat strain. By directly ingesting **FortyGuard’s satellite-derived thermal microclimate grids**, ThermaShift AI continuously monitors asphalt and ground surface temperatures, calculates OSHA/ISO 7243 Wet Bulb Globe Temperature (WBGT) strain, dynamically computes thermal relief relocation vectors, dispatches autonomous voice calls via **CALL-E Telephony**, and generates 1-click legal compliance audit reports.
 
-[Explore Live Demo](https://thermashift-ai.vercel.app) • [API Documentation](https://thermashift-ai.vercel.app/api/health) • [System Architecture](#-system-architecture) • [Scientific Grounding](#-scientific--regulatory-grounding)
+[Explore Live Demo](https://thermashift-ai.vercel.app) • [Interactive Swagger Docs](https://thermashift-ai.onrender.com/docs) • [System Architecture](#-system-architecture) • [Scientific Grounding](#-scientific--regulatory-grounding)
 
 </div>
 

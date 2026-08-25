@@ -38,8 +38,8 @@ async def trigger_outbound_call(worker, site, snapshot) -> str:
     and structured verification schema.
     Returns the call_id (e.g. 'call_91-GpTzKXNBvpPox8NN4gw').
     """
-    api_key = settings.calle_api_key
-    base_url = settings.calle_base_url.rstrip("/")
+    api_key = settings.calle_api_key.strip()
+    base_url = str(settings.calle_base_url).strip().rstrip("/")
     if not api_key:
         raise ValueError("CALLE_API_KEY is not configured in .env")
 
@@ -110,8 +110,8 @@ async def trigger_outbound_call(worker, site, snapshot) -> str:
 
 async def get_call_status(call_id: str) -> dict:
     """Fetch live call execution status, structured result, and summary from CALL-E."""
-    api_key = settings.calle_api_key
-    base_url = settings.calle_base_url.rstrip("/")
+    api_key = settings.calle_api_key.strip()
+    base_url = str(settings.calle_base_url).strip().rstrip("/")
     if not api_key:
         raise ValueError("CALLE_API_KEY is not configured")
 
@@ -127,8 +127,8 @@ async def get_call_status(call_id: str) -> dict:
 
 async def get_call_events(call_id: str) -> dict:
     """Fetch live event log and transcript snippets from CALL-E."""
-    api_key = settings.calle_api_key
-    base_url = settings.calle_base_url.rstrip("/")
+    api_key = settings.calle_api_key.strip()
+    base_url = str(settings.calle_base_url).strip().rstrip("/")
     if not api_key:
         raise ValueError("CALLE_API_KEY is not configured")
 
@@ -147,8 +147,8 @@ async def trigger_direct_call(phone_number: str, worker_name: str) -> str:
     No DB worker or site required — used for demo/testing via DirectCallModal.
     Returns the call_id.
     """
-    api_key = settings.calle_api_key
-    base_url = settings.calle_base_url.rstrip("/")
+    api_key = settings.calle_api_key.strip()
+    base_url = str(settings.calle_base_url).strip().rstrip("/")
     if not api_key:
         raise ValueError("CALLE_API_KEY is not configured in .env")
 
