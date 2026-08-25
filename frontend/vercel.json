@@ -5,10 +5,6 @@
   "cleanUrls": true,
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "https://sat-1400-command-center-production.up.railway.app/$1"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
