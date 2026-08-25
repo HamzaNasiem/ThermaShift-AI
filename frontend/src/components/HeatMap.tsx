@@ -246,7 +246,7 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
                 lng: cLng.toFixed(6),
                 isHotspot: isHotspotCell || cellTemp >= 118,
                 isCanopy: isCanopyCell || cellTemp <= 88,
-                surfaceType: cellTemp >= 115 ? 'Industrial Heavy Asphalt' : cellTemp <= 88 ? 'Shaded Canopy Refuge' : 'Compacted Slab / Soil',
+                surfaceType: cellTemp >= 115 ? 'Peak Heat Exposure Sector' : cellTemp <= 88 ? 'Coolest Measured Microclimate Sector' : 'Intermediate Ground Sector',
                 oshaRatio: cellTemp >= 112 ? '15 min Work / 45 min Shade Rest' : cellTemp >= 100 ? '30 min Work / 30 min Rest' : 'Normal Operations',
               })
             })
@@ -268,7 +268,7 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
         outerPoly.addTo(boundaryLayerRef.current)
       }
 
-      // Draw Animated ThermaShift Relocation Vector
+      // Draw Animated ThermaShift Relocation Vector (Peak Hotspot -> Coolest Measured Sector)
       if (showEscapeVector && hotspotCoords && refugeCoords && vectorLayerRef.current) {
         const escapeLine = L.polyline([hotspotCoords, refugeCoords], {
           color: '#059669',
@@ -278,7 +278,7 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
         })
         escapeLine.addTo(vectorLayerRef.current)
 
-        // Hotspot Marker
+        // Hotspot Marker (Peak Heat Exposure Sector)
         L.circleMarker(hotspotCoords, {
           radius: 7,
           fillColor: '#DC2626',
@@ -287,7 +287,7 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
           fillOpacity: 0.95,
         }).addTo(vectorLayerRef.current)
 
-        // Canopy Refuge Marker
+        // Coolest Measured Sector Marker (Optimal Refuge Zone)
         L.circleMarker(refugeCoords, {
           radius: 8,
           fillColor: '#059669',
@@ -304,7 +304,7 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
 
         const tagIcon = L.divIcon({
           className: 'vector-tag-container',
-          html: `<div class="vector-tag-badge">Relocation: -${reliefTemp}°F (${distance}m)</div>`,
+          html: `<div class="vector-tag-badge">Relief Vector: -${reliefTemp}°F (${distance}m)</div>`,
           iconSize: [200, 24],
           iconAnchor: [100, 12]
         })
@@ -322,7 +322,7 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
   }, [site, riskLevel, snapshot, microclimate, granularity, opacity, showMesh, showEscapeVector])
 
   return (
-    <div className="flex flex-col h-full bg-[#ffffff] text-[#141414] rounded-2xl overflow-hidden border border-[#e5e5e5] shadow-sm relative">
+    <div className="flex flex-col h-full bg-[#ffffff] text-[#141414] rounded-2xl overflow-hidden border border-[#e5e5e5] shadow-sm relative font-sans">
       
       {/* Top Map Control Bar */}
       <div className="p-3 bg-[#ffffff] border-b border-[#e5e5e5] flex flex-wrap items-center justify-between gap-3 text-xs">
@@ -397,7 +397,7 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
                 : 'bg-[#f4f4f4] text-slate-600 border-[#e5e5e5]'
             }`}
           >
-            Vector Line
+            Relief Vector
           </button>
         </div>
       </div>
@@ -413,7 +413,7 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <h4 className="font-bold text-[#141414] text-xs">
-                  Tile Telemetry
+                  FortyGuard Tile Telemetry
                 </h4>
               </div>
               <button
@@ -426,19 +426,19 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
 
             <div className="space-y-2 text-xs">
               <div className="flex justify-between bg-[#f9fafb] p-2 rounded-lg border border-slate-100">
-                <span className="text-slate-500 font-medium">Surface Temp:</span>
+                <span className="text-slate-500 font-medium">Measured Temp:</span>
                 <span className="font-black text-rose-600 tabular-nums">{selectedPoint.tempF}°F ({selectedPoint.tempC}°C)</span>
               </div>
               <div className="flex justify-between bg-[#f9fafb] p-2 rounded-lg border border-slate-100">
-                <span className="text-slate-500 font-medium">Coordinates:</span>
+                <span className="text-slate-500 font-medium">GPS Coordinates:</span>
                 <span className="font-mono text-slate-700 font-semibold text-[11px]">{selectedPoint.lat}, {selectedPoint.lng}</span>
               </div>
               <div className="flex justify-between bg-[#f9fafb] p-2 rounded-lg border border-slate-100">
-                <span className="text-slate-500 font-medium">Surface Type:</span>
+                <span className="text-slate-500 font-medium">Spatial Sector:</span>
                 <span className="font-semibold text-slate-800 truncate max-w-[130px]">{selectedPoint.surfaceType}</span>
               </div>
               <div className="bg-[#f9fafb] p-2 rounded-lg border border-slate-100 space-y-0.5">
-                <span className="text-slate-500 text-[10px] font-medium block">OSHA Protocol:</span>
+                <span className="text-slate-500 text-[10px] font-medium block">OSHA Schedule:</span>
                 <span className="font-bold text-amber-700 text-xs block">{selectedPoint.oshaRatio}</span>
               </div>
             </div>
@@ -457,7 +457,7 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
           <div className="flex items-center justify-between text-[#141414] font-bold">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
-              FortyGuard Spectral Scale
+              FortyGuard Spatial Heat Gradient
             </span>
             <span className="text-slate-500 text-[10px] font-bold">°F</span>
           </div>
@@ -465,9 +465,9 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
           <div className="w-full h-2.5 rounded-full overflow-hidden shadow-inner bg-gradient-to-r from-[#313695] via-[#ffffbf] via-[#fdae61] to-[#67001f]" />
 
           <div className="flex items-center justify-between text-[10px] text-slate-600 font-semibold">
-            <span>&lt;84°F Cool</span>
-            <span>98°F Elevated</span>
-            <span>&gt;118°F Extreme</span>
+            <span>&lt;84°F Tmin (Coolest)</span>
+            <span>98°F Tmean</span>
+            <span>&gt;118°F Tmax (Peak Hotspot)</span>
           </div>
         </div>
 

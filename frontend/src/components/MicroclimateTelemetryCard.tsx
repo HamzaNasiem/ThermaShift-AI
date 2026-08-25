@@ -24,7 +24,7 @@ export default function MicroclimateTelemetryCard({ data, loading, onBroadcastCl
   const solarRad = data.solar_radiation_w_m2
   const reliefDelta = data.cooling_delta_f
   const shiftDist = data.recommended_shift_distance_m
-  const canopyTemp = Math.round((ambientTemp - 20) * 10) / 10
+  const coolSectorTemp = Math.round((ambientTemp - 20) * 10) / 10
 
   const isExtreme = ambientTemp >= 104 || surfaceTemp >= 118
   const isElevated = (ambientTemp >= 95 || surfaceTemp >= 106) && !isExtreme
@@ -39,54 +39,54 @@ export default function MicroclimateTelemetryCard({ data, loading, onBroadcastCl
     : 'border-emerald-200 bg-emerald-50 text-emerald-800'
 
   return (
-    <div className="card-surface p-4 space-y-4">
+    <div className="card-surface p-4 space-y-4 font-sans">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-[#e5e5e5] pb-3">
         <div>
           <h3 className="text-xs font-bold text-[#141414] tracking-tight">
-            Microclimate Telemetry
+            Spatial Thermal Telemetry
           </h3>
           <p className="text-[11px] text-slate-500 font-medium">
-            FortyGuard Surface vs Shaded Canopy Physics
+            FortyGuard Satellite Peak vs Coolest AOI Sector
           </p>
         </div>
         <span className="badge-slate text-[10px] font-semibold">
-          100m Sensor Grid
+          100m Spatial Grid
         </span>
       </div>
 
       {/* 3 Stat Metrics */}
       <div className="grid grid-cols-3 gap-2 text-center">
-        {/* 1. Ground Asphalt */}
+        {/* 1. Peak Hotspot */}
         <div className="p-2.5 rounded-xl bg-[#f9fafb] border border-rose-200">
-          <span className="text-[10px] font-semibold text-slate-600 block mb-0.5">Asphalt Ground</span>
+          <span className="text-[10px] font-semibold text-slate-600 block mb-0.5">Peak Hotspot (Tmax)</span>
           <div className="text-xl font-black text-rose-600 tracking-tight tabular-nums">
             {surfaceTemp}°F
           </div>
           <span className="text-[9px] text-rose-700 font-bold">
-            +{uhiDelta}°F UHI Penalty
+            +{uhiDelta}°F Solar Penalty
           </span>
         </div>
 
-        {/* 2. Ambient Weather Air */}
+        {/* 2. Mean Air Temp */}
         <div className="p-2.5 rounded-xl bg-[#f9fafb] border border-slate-200">
-          <span className="text-[10px] font-semibold text-slate-600 block mb-0.5">Air Temp</span>
+          <span className="text-[10px] font-semibold text-slate-600 block mb-0.5">Site Mean (Tmean)</span>
           <div className="text-xl font-black text-amber-600 tracking-tight tabular-nums">
             {ambientTemp}°F
           </div>
           <span className="text-[9px] text-slate-500 font-medium">
-            {solarRad} W/m² Sun
+            {solarRad} W/m² Solar
           </span>
         </div>
 
-        {/* 3. Shaded Canopy Refuge */}
+        {/* 3. Coolest Measured Sector */}
         <div className="p-2.5 rounded-xl bg-[#f9fafb] border border-emerald-200">
-          <span className="text-[10px] font-semibold text-slate-600 block mb-0.5">Canopy Refuge</span>
+          <span className="text-[10px] font-semibold text-slate-600 block mb-0.5">Coolest Sector (Tmin)</span>
           <div className="text-xl font-black text-emerald-600 tracking-tight tabular-nums">
-            {canopyTemp}°F
+            {coolSectorTemp}°F
           </div>
           <span className="text-[9px] text-emerald-700 font-bold">
-            -{reliefDelta}°F Cooling
+            -{reliefDelta}°F Optimal Zone
           </span>
         </div>
       </div>
@@ -115,14 +115,14 @@ export default function MicroclimateTelemetryCard({ data, loading, onBroadcastCl
       <div className="p-3 rounded-xl bg-[#f9fafb] border border-slate-200 space-y-2 text-xs">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-bold text-[#141414]">
-            Relocation Vector
+            Thermal Gradient Relocation Vector
           </span>
           <span className="text-[10px] font-bold text-emerald-700 px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-200">
             -{reliefDelta}°F Relief
           </span>
         </div>
         <p className="text-[11px] text-slate-600 leading-relaxed font-medium">
-          Zone A (Unshaded Asphalt) → Shift crew to Zone D (Shaded Canopy) ({shiftDist}m distance).
+          FortyGuard scan detects peak exposure at Sector A ({surfaceTemp}°F). Guided safety vector points {shiftDist}m toward lowest thermal exposure Sector D ({coolSectorTemp}°F).
         </p>
 
         {onBroadcastClick && (
