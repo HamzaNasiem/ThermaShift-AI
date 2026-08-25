@@ -81,23 +81,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Standard direct routes
 app.include_router(sites.router, prefix="/sites", tags=["Sites"])
 app.include_router(workers.router, prefix="/workers", tags=["Workers"])
 app.include_router(heat.router, prefix="/heat", tags=["Heat"])
 app.include_router(alerts.router, prefix="/alerts", tags=["Alerts"])
 app.include_router(internal.router, prefix="/internal", tags=["Internal"])
 
-# Dual-mount under /api for 100% serverless & reverse proxy resilience
-app.include_router(sites.router, prefix="/api/sites", tags=["Sites API"])
-app.include_router(workers.router, prefix="/api/workers", tags=["Workers API"])
-app.include_router(heat.router, prefix="/api/heat", tags=["Heat API"])
-app.include_router(alerts.router, prefix="/api/alerts", tags=["Alerts API"])
-app.include_router(internal.router, prefix="/api/internal", tags=["Internal API"])
-
 
 @app.get("/health", tags=["Health"])
-@app.get("/api/health", tags=["Health"])
 async def health_check():
     """Simple liveness check endpoint."""
     return {"status": "ok", "service": "ThermaShift AI"}
