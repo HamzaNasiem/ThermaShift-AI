@@ -44,37 +44,39 @@ export default function Sites() {
   }
 
   return (
-    <div className="space-y-6 font-mono">
+    <div className="space-y-6 font-sans">
       {/* Header Bar */}
-      <div className="card-warm p-5 flex flex-wrap items-center justify-between gap-4">
+      <div className="card-surface p-5 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-lg font-black text-white font-sans">
+          <h1 className="text-base font-bold text-[#141414]">
             Registered Geo-Fenced Work Sites
           </h1>
-          <p className="text-xs text-[#A27B5C] mt-0.5">
-            Hyperlocal Outdoor Sites Monitored 24/7 by FortyGuard AI
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
+            Hyperlocal Industrial & Construction Polygons Monitored 24/7 by FortyGuard AI
           </p>
         </div>
 
         <button
           onClick={() => setShowModal(true)}
-          className="btn-bronze flex items-center gap-2"
+          className="btn-primary"
         >
-          <span>➕</span>
-          <span>Pinpoint & Register Work Site</span>
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Register New Work Site</span>
         </button>
       </div>
 
       {/* Sites Grid */}
       {loading ? (
-        <div className="card-warm p-8 text-center text-xs text-[#DCD7C9]/60">
-          Loading registered job sites...
+        <div className="card-surface p-8 text-center text-xs text-slate-400 font-medium animate-pulse">
+          Syncing registered job sites...
         </div>
       ) : sites.length === 0 ? (
-        <div className="card-warm p-12 text-center space-y-3">
-          <p className="text-sm font-bold text-white">No Work Sites Registered</p>
-          <p className="text-xs text-[#DCD7C9]/70">
-            Click "Pinpoint & Register Work Site" to add California, US, or international outdoor work sites.
+        <div className="card-surface p-12 text-center space-y-3">
+          <p className="text-sm font-bold text-[#141414]">No Work Sites Registered</p>
+          <p className="text-xs text-slate-500 font-medium">
+            Click "Register New Work Site" to add outdoor job sites.
           </p>
         </div>
       ) : (
@@ -85,59 +87,59 @@ export default function Sites() {
             return (
               <div
                 key={site.id}
-                className="card-warm p-5 flex flex-col justify-between space-y-4 hover:border-[#A27B5C]/60 hover:shadow-2xl transition-all"
+                className="card-surface p-5 flex flex-col justify-between space-y-4 hover:border-slate-300 hover:shadow-md transition-all"
               >
                 <div className="space-y-3 text-xs">
-                  <div className="flex items-start justify-between gap-2 border-b border-[#3F4E4F]/60 pb-3">
+                  <div className="flex items-start justify-between gap-2 border-b border-[#e5e5e5] pb-3">
                     <div>
-                      <h3 className="font-bold text-white text-sm leading-tight font-sans">
+                      <h3 className="font-bold text-[#141414] text-sm leading-tight">
                         {site.name}
                       </h3>
-                      <span className="text-[10px] text-[#A27B5C] block mt-0.5">
-                        Site ID: {site.id.slice(0, 8)}...
+                      <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
+                        ID: {site.id.slice(0, 8)}...
                       </span>
                     </div>
-                    <span className="px-2 py-0.5 rounded-lg bg-emerald-900/40 border border-emerald-500/40 text-emerald-400 text-[10px] font-bold shrink-0">
-                      🟢 Active Feed
+                    <span className="badge-emerald text-[10px] font-bold shrink-0">
+                      Active Feed
                     </span>
                   </div>
 
-                  <div className="space-y-2 text-xs text-[#DCD7C9]/80">
+                  <div className="space-y-2 text-xs text-slate-600">
                     <div className="flex justify-between">
-                      <span className="text-[#DCD7C9]/60">Protected Personnel:</span>
-                      <span className="font-bold text-white">{siteWorkers.length} workers</span>
+                      <span className="text-slate-500 font-medium">Protected Personnel:</span>
+                      <span className="font-bold text-[#141414]">{siteWorkers.length} workers</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#DCD7C9]/60">Caution Threshold:</span>
-                      <span className="font-bold text-[#A27B5C]">{site.elevated_threshold_f}°F</span>
+                      <span className="text-slate-500 font-medium">Caution Threshold:</span>
+                      <span className="font-bold text-amber-600">{site.elevated_threshold_f}°F</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#DCD7C9]/60">Extreme Hazard:</span>
-                      <span className="font-bold text-red-400">{site.extreme_threshold_f}°F</span>
+                      <span className="text-slate-500 font-medium">Extreme Hazard:</span>
+                      <span className="font-bold text-rose-600">{site.extreme_threshold_f}°F</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#DCD7C9]/60">Auto-Poll Interval:</span>
-                      <span className="font-bold text-white">{site.poll_interval_minutes || 10} min</span>
+                      <span className="text-slate-500 font-medium">Auto-Poll Interval:</span>
+                      <span className="font-bold text-[#141414]">{site.poll_interval_minutes || 10} min</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex items-center gap-2 pt-3 border-t border-[#3F4E4F]/60">
+                <div className="flex items-center gap-2 pt-3 border-t border-[#e5e5e5]">
                   <button
                     onClick={() => navigate(`/?site_id=${site.id}`)}
-                    className="flex-1 py-2 px-3 rounded-xl bg-[#1E2628] hover:bg-[#3F4E4F] text-white text-xs font-bold transition-all text-center border border-[#3F4E4F]"
+                    className="flex-1 btn-primary text-xs py-2"
                   >
-                    👁️ Launch Radar
+                    Open Live Radar
                   </button>
 
                   <button
                     onClick={() => handleDeleteSite(site)}
                     disabled={deletingId === site.id}
-                    className="py-2 px-3 rounded-xl bg-red-900/30 hover:bg-red-900/60 text-red-300 border border-red-500/30 text-xs font-bold transition-all"
+                    className="py-2 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-all"
                     title="Remove this work site from monitoring"
                   >
-                    {deletingId === site.id ? '...' : '🗑️ Remove'}
+                    {deletingId === site.id ? '...' : 'Remove'}
                   </button>
                 </div>
               </div>

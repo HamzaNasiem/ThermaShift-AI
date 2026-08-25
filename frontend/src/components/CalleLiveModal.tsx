@@ -31,19 +31,21 @@ export default function CalleLiveModal({ callId, onClose }: CalleLiveModalProps)
   }, [callId])
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
-      <div className="bg-[#2C3639] text-[#DCD7C9] border-2 border-[#A27B5C] rounded-3xl max-w-xl w-full p-6 space-y-5 shadow-2xl">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm animate-fade-in font-sans">
+      <div className="bg-[#ffffff] text-[#141414] border border-slate-200 rounded-2xl max-w-xl w-full max-h-[88vh] flex flex-col shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#3F4E4F] pb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#A27B5C] flex items-center justify-center text-white text-xl animate-pulse">
-              📞
+        <div className="shrink-0 p-4 border-b border-slate-200 flex items-center justify-between bg-[#ffffff]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 font-bold">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
             </div>
             <div>
-              <h2 className="text-base font-bold text-white font-sans">
-                CALL-E Autonomous Voice Agent Dispatch
+              <h2 className="text-sm font-bold text-[#141414]">
+                CALL-E Autonomous Voice Dispatch
               </h2>
-              <p className="text-[10px] text-[#A27B5C] font-mono tracking-wider uppercase font-semibold">
+              <p className="text-[11px] text-slate-500 font-medium">
                 Live Outbound Call Stream: api.heycall-e.com
               </p>
             </div>
@@ -51,93 +53,83 @@ export default function CalleLiveModal({ callId, onClose }: CalleLiveModalProps)
 
           <button
             onClick={onClose}
-            className="text-[#DCD7C9]/70 hover:text-white text-xl font-bold font-mono px-2 py-1"
+            className="text-slate-400 hover:text-[#141414] text-lg font-bold"
           >
             ✕
           </button>
         </div>
 
         {/* Live Call Telemetry */}
-        {loading && !data && (
-          <div className="py-8 text-center text-xs font-mono text-[#DCD7C9]/70 animate-pulse">
-            Connecting to CALL-E server...
-          </div>
-        )}
-
-        {error && (
-          <div className="p-3 rounded-xl bg-red-900/40 border border-red-500/40 text-red-300 text-xs font-mono">
-            {error}
-          </div>
-        )}
-
-        {data && (
-          <div className="space-y-4">
-            {/* Status Pills */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs font-mono">
-              <div className="bg-[#3F4E4F]/60 p-2.5 rounded-xl border border-[#3F4E4F]">
-                <span className="text-[10px] text-[#DCD7C9]/60 block">Call ID</span>
-                <span className="font-bold text-[#A27B5C] truncate block">{data.id}</span>
-              </div>
-              <div className="bg-[#3F4E4F]/60 p-2.5 rounded-xl border border-[#3F4E4F]">
-                <span className="text-[10px] text-[#DCD7C9]/60 block">Live Status</span>
-                <span className={`font-bold uppercase ${data.status === 'completed' ? 'text-emerald-400' : 'text-amber-400 animate-pulse'}`}>
-                  ● {data.status}
-                </span>
-              </div>
-              <div className="bg-[#3F4E4F]/60 p-2.5 rounded-xl border border-[#3F4E4F] col-span-2 sm:col-span-1">
-                <span className="text-[10px] text-[#DCD7C9]/60 block">Recipient</span>
-                <span className="font-bold text-white">
-                  {data.recipients?.[0]?.phones?.[0] || 'Worker'}
-                </span>
-              </div>
+        <div className="flex-1 overflow-y-auto p-5 space-y-4 text-xs">
+          {loading && !data && (
+            <div className="py-8 text-center text-xs text-slate-400 animate-pulse font-medium">
+              Connecting to CALL-E server stream...
             </div>
+          )}
 
-            {/* Task Instruction */}
-            <div className="bg-black/40 rounded-2xl p-3.5 border border-[#3F4E4F] space-y-1">
-              <span className="text-[10px] uppercase font-bold text-[#A27B5C] block font-mono">
-                CALL-E Voice Mission Instruction:
-              </span>
-              <p className="text-xs text-[#DCD7C9] leading-relaxed font-mono">
-                {data.task}
-              </p>
+          {error && (
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium">
+              {error}
             </div>
+          )}
 
-            {/* Structured Result */}
-            {data.structured_result && (
-              <div className="bg-emerald-950/40 border border-emerald-500/30 rounded-2xl p-3.5 space-y-1">
-                <span className="text-[10px] uppercase font-bold text-emerald-400 block font-mono">
-                  Worker Structured Verification Result:
-                </span>
-                <pre className="text-xs text-emerald-300 font-mono">
-                  {JSON.stringify(data.structured_result, null, 2)}
-                </pre>
+          {data && (
+            <div className="space-y-4">
+              {/* Status Pills */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+                <div className="bg-[#f9fafb] p-2.5 rounded-xl border border-slate-200">
+                  <span className="text-[10px] text-slate-500 font-medium block">Call ID</span>
+                  <span className="font-bold text-[#141414] truncate block font-mono text-[11px]">{data.id}</span>
+                </div>
+                <div className="bg-[#f9fafb] p-2.5 rounded-xl border border-slate-200">
+                  <span className="text-[10px] text-slate-500 font-medium block">Live Status</span>
+                  <span className={`font-bold uppercase ${data.status === 'completed' ? 'text-emerald-700' : 'text-amber-600 animate-pulse'}`}>
+                    ● {data.status}
+                  </span>
+                </div>
+                <div className="bg-[#f9fafb] p-2.5 rounded-xl border border-slate-200 col-span-2 sm:col-span-1">
+                  <span className="text-[10px] text-slate-500 font-medium block">Recipient</span>
+                  <span className="font-bold text-[#141414] font-mono text-[11px]">
+                    {data.recipients?.[0]?.phones?.[0] || 'Worker'}
+                  </span>
+                </div>
               </div>
-            )}
 
-            {/* Call Summary */}
-            {data.summary && (
-              <div className="bg-black/30 rounded-2xl p-3.5 border border-[#3F4E4F] space-y-1">
-                <span className="text-[10px] uppercase font-bold text-[#A27B5C] block font-mono">
-                  Call Summary:
+              {/* Task Instruction */}
+              <div className="bg-[#f9fafb] rounded-2xl p-3.5 border border-slate-200 space-y-1">
+                <span className="text-[10px] uppercase font-bold text-slate-600 block">
+                  CALL-E Voice Mission Instruction:
                 </span>
-                <p className="text-xs text-[#DCD7C9] font-sans">
-                  {data.summary}
+                <p className="text-xs text-slate-800 leading-relaxed font-medium">
+                  {data.task || 'Autonomous bilingual emergency heat evacuation warning.'}
                 </p>
               </div>
-            )}
-          </div>
-        )}
+
+              {/* Live Transcript / Summary */}
+              {data.summary && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3.5 space-y-1">
+                  <span className="text-[10px] font-bold text-emerald-800 uppercase block">
+                    ✓ Structured Call Summary:
+                  </span>
+                  <p className="text-xs text-emerald-950 leading-relaxed font-medium">
+                    {data.summary}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-2 border-t border-[#3F4E4F]">
-          <span className="text-[10px] text-[#DCD7C9]/60 font-mono">
-            Powered by CALL-E (HeyCall-E) Production API
+        <div className="shrink-0 p-3.5 border-t border-slate-200 flex items-center justify-between bg-[#ffffff]">
+          <span className="text-[11px] text-slate-500 font-medium">
+            Verified CALL-E Telephony
           </span>
           <button
             onClick={onClose}
-            className="btn-bronze"
+            className="btn-secondary font-semibold"
           >
-            Close Inspector
+            Close Stream
           </button>
         </div>
       </div>

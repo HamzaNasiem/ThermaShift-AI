@@ -24,7 +24,6 @@ export default function DirectCallModal({
     setResult(null)
 
     try {
-      // Call CALL-E directly via backend — no DB worker creation, no site lookup
       const res = await fetch('/api/internal/calle/direct-call', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -49,75 +48,82 @@ export default function DirectCallModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
-      <div className="bg-[#2C3639] text-[#DCD7C9] border-2 border-[#A27B5C] rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl">
-        <div className="flex items-center justify-between border-b border-[#3F4E4F] pb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#A27B5C] flex items-center justify-center text-white text-xl">
-              📱
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm animate-fade-in font-sans">
+      <div className="bg-[#ffffff] text-[#141414] border border-slate-200 rounded-2xl max-w-md w-full max-h-[88vh] flex flex-col shadow-2xl overflow-hidden">
+        <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-[#ffffff]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-700 font-bold">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
             </div>
             <div>
-              <h2 className="text-base font-bold text-white font-sans">
+              <h2 className="text-sm font-bold text-[#141414]">
                 Dial Real Mobile Phone via CALL-E
               </h2>
-              <p className="text-[10px] text-[#A27B5C] font-mono tracking-wider uppercase font-semibold">
-                Live Outbound Call to Your Phone
+              <p className="text-[11px] text-slate-500 font-medium">
+                Live Outbound Call Dispatch
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="text-[#DCD7C9]/70 hover:text-white text-xl font-bold font-mono px-2 py-1">
+          <button onClick={onClose} className="text-slate-400 hover:text-[#141414] text-lg font-bold">
             ✕
           </button>
         </div>
 
-        <div className="space-y-4 font-mono text-xs">
+        <div className="flex-1 overflow-y-auto p-5 space-y-4 text-xs">
           <div>
-            <label className="block text-[10px] text-[#DCD7C9]/70 uppercase mb-1">Your Name</label>
+            <label className="block text-[10px] text-slate-500 font-semibold uppercase mb-1">Your Name</label>
             <input
               type="text"
               placeholder="e.g. Asad Ali"
               value={workerName}
               onChange={(e) => setWorkerName(e.target.value)}
-              className="w-full bg-[#3F4E4F] border border-[#A27B5C]/40 text-white rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#A27B5C]"
+              className="w-full bg-[#f9fafb] border border-slate-200 text-[#141414] rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-slate-400"
             />
           </div>
 
           <div>
-            <label className="block text-[10px] text-[#DCD7C9]/70 uppercase mb-1">Your Phone Number (with Country Code)</label>
+            <label className="block text-[10px] text-slate-500 font-semibold uppercase mb-1">Phone Number (with Country Code)</label>
             <input
               type="text"
               placeholder="e.g. +923001234567 or +14155552671"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
-              className="w-full bg-[#3F4E4F] border border-[#A27B5C]/40 text-white rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#A27B5C]"
+              className="w-full bg-[#f9fafb] border border-slate-200 text-[#141414] rounded-xl px-3.5 py-2 text-xs font-mono focus:outline-none focus:border-slate-400"
             />
-            <p className="text-[10px] text-[#A27B5C] mt-1">Include "+" and country code (e.g. +92 for PK, +1 for US)</p>
+            <p className="text-[11px] text-slate-500 mt-1 font-medium">Include "+" and country code (e.g. +92 for PK, +1 for US)</p>
           </div>
 
           {error && (
-            <div className="p-3 rounded-xl bg-red-900/40 border border-red-500/40 text-red-300 text-xs">
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium">
               {error}
             </div>
           )}
 
           {result && (
-            <div className="p-3 rounded-xl bg-emerald-950/50 border border-emerald-500/40 text-emerald-300 text-xs space-y-1">
-              <p className="font-bold">✓ CALL-E Voice Call Dispatched!</p>
-              <p className="text-[10px]">Your phone will ring shortly with the autonomous heat evacuation warning.</p>
+            <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs space-y-1.5">
+              <div className="font-bold flex items-center gap-1.5">
+                <span>✓</span>
+                <span>Call Initiated! Ringing your phone now...</span>
+              </div>
+              <div className="font-mono text-[11px] text-emerald-900/80">Call ID: {result.call_id}</div>
+              <p className="text-[11px] text-emerald-900/70 font-medium">Answer the call to hear ThermaShift AI's bilingual voice dispatch.</p>
             </div>
           )}
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-[#3F4E4F]">
-          <button onClick={onClose} className="btn-charcoal border border-[#3F4E4F]">
-            Cancel
+        <div className="p-3.5 border-t border-slate-200 flex items-center justify-between bg-[#ffffff]">
+          <button type="button" onClick={onClose} className="btn-secondary font-semibold">
+            Close
           </button>
           <button
+            type="button"
             onClick={handleCall}
             disabled={loading || !phoneNumber}
-            className="btn-bronze flex items-center gap-2"
+            className="btn-primary"
           >
-            <span>{loading ? 'Dialing via CALL-E...' : '📞 Call My Phone Now'}</span>
+            {loading ? 'Dialing CALL-E...' : 'Call My Phone Now'}
           </button>
         </div>
       </div>

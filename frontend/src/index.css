@@ -8,8 +8,8 @@
   }
 
   body {
-    background-color: #0B0F12;
-    color: #E2E8F0;
+    background-color: #f4f4f4;
+    color: #141414;
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -21,36 +21,36 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #0B0F12;
+    background: #f4f4f4;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #1E293B;
+    background: #d4d4d4;
     border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #334155;
+    background: #a3a3a3;
   }
 }
 
 @layer components {
-  /* Modern Clean Enterprise Cards */
+  /* Crisp Light Mode Enterprise Surfaces */
   .card-surface {
-    @apply bg-[#11171B] text-slate-200 border border-slate-800/80 rounded-2xl shadow-xl transition-all duration-200;
+    @apply bg-[#ffffff] text-[#141414] border border-[#e5e5e5] rounded-2xl shadow-sm transition-all duration-200;
   }
 
   .card-surface-hover {
-    @apply card-surface hover:border-slate-700/90 hover:bg-[#151D22];
+    @apply card-surface hover:border-slate-300 hover:shadow-md;
   }
 
   .card-surface-glass {
-    @apply bg-[#11171B]/90 backdrop-blur-md text-slate-200 border border-slate-800/80 rounded-2xl shadow-2xl;
+    @apply bg-[#ffffff]/95 backdrop-blur-md text-[#141414] border border-[#e5e5e5] rounded-2xl shadow-lg;
   }
 
-  /* Refined Buttons */
+  /* Refined High-Contrast Buttons */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition-all duration-150 shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center gap-2 bg-[#141414] hover:bg-[#262626] text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition-all duration-150 shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
   }
 
   .btn-danger {
@@ -58,33 +58,33 @@
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium px-3.5 py-2 rounded-xl transition-all duration-150 border border-slate-700/60 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center gap-2 bg-[#ffffff] hover:bg-[#f5f5f5] text-[#141414] text-xs font-medium px-3.5 py-2 rounded-xl transition-all duration-150 border border-[#e5e5e5] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none shadow-sm;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 bg-transparent hover:bg-slate-800/60 text-slate-300 hover:text-white text-xs font-medium px-3 py-1.5 rounded-xl transition-all duration-150 border border-slate-800 active:scale-[0.98];
+    @apply inline-flex items-center justify-center gap-2 bg-transparent hover:bg-slate-100 text-[#141414] text-xs font-medium px-3 py-1.5 rounded-xl transition-all duration-150 border border-slate-200 active:scale-[0.98];
   }
 
-  /* Subtle Status Badges */
+  /* Subtle Crisp Light Badges */
   .badge-emerald {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20;
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200;
   }
 
   .badge-amber {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20;
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200;
   }
 
   .badge-rose {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20;
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200;
   }
 
   .badge-slate {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800/60 text-slate-400 border border-slate-700/50;
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200;
   }
 }
 
 .leaflet-container {
-  background: #0B0F12 !important;
+  background: #f4f4f4 !important;
   border-radius: 16px;
   width: 100%;
   height: 100%;

@@ -83,134 +83,143 @@ export default function RegisterSiteModal({ onSiteCreated, onClose }: RegisterSi
   }
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
-      <div className="bg-[#2C3639] text-[#DCD7C9] border-2 border-[#A27B5C] rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl">
-        <div className="flex items-center justify-between border-b border-[#3F4E4F] pb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#A27B5C] flex items-center justify-center text-white text-xl">
-              Pin
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm animate-fade-in font-sans">
+      <div className="bg-[#ffffff] text-[#141414] border border-slate-200 rounded-2xl max-w-lg w-full max-h-[88vh] flex flex-col shadow-2xl overflow-hidden">
+        <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-[#ffffff]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 font-bold">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
             </div>
             <div>
-              <h2 className="text-base font-bold text-white font-sans">
-                Register Exact Work Site AOI
+              <h2 className="text-sm font-bold text-[#141414]">
+                Register Work Site AOI
               </h2>
-              <p className="text-[10px] text-[#A27B5C] font-mono tracking-wider uppercase font-semibold">
-                Pinpoint Coordinates for FortyGuard Microclimate Polling
+              <p className="text-[11px] text-slate-500 font-medium">
+                FortyGuard Satellite Microclimate Polling Area
               </p>
             </div>
           </div>
-
-          <button onClick={onClose} className="text-[#DCD7C9]/70 hover:text-white text-xl font-bold font-mono px-2 py-1">
+          <button onClick={onClose} className="text-slate-400 hover:text-[#141414] text-lg font-bold">
             ✕
           </button>
         </div>
 
-        <div className="space-y-1.5 font-mono text-xs">
-          <span className="text-[10px] text-[#A27B5C] uppercase font-bold block">Quick California & US Presets:</span>
-          <div className="flex flex-wrap gap-1.5">
-            {PRESET_LOCATIONS.map((preset) => (
-              <button
-                key={preset.name}
-                type="button"
-                onClick={() => handlePresetSelect(preset)}
-                className="px-2.5 py-1 rounded-lg bg-[#3F4E4F]/60 hover:bg-[#A27B5C] text-[#DCD7C9] hover:text-white text-[10px] border border-[#3F4E4F] transition-all"
-              >
-                {preset.name.split(',')[0]}
-              </button>
-            ))}
+        <div className="flex-1 overflow-y-auto p-5 space-y-4 text-xs">
+          {/* Quick Presets */}
+          <div>
+            <label className="block text-[10px] text-slate-500 font-semibold uppercase mb-1.5">
+              Quick Global Worksite Presets
+            </label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {PRESET_LOCATIONS.map((preset) => (
+                <button
+                  key={preset.name}
+                  type="button"
+                  onClick={() => handlePresetSelect(preset)}
+                  className="p-2 rounded-xl bg-[#f9fafb] border border-slate-200 hover:border-slate-300 text-left text-[11px] transition-colors"
+                >
+                  <span className="font-semibold text-[#141414] block truncate">{preset.name.split(',')[0]}</span>
+                  <span className="text-[10px] text-slate-500">{preset.lat}, {preset.lng}</span>
+                </button>
+              ))}
+            </div>
           </div>
+
+          <form id="register-site-form" onSubmit={handleSubmit} className="space-y-3">
+            <div>
+              <label className="block text-[10px] text-slate-500 font-semibold uppercase mb-1">Site / Facility Name</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Phoenix Sky Harbor Logistics Yard"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full bg-[#f9fafb] border border-slate-200 text-[#141414] rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:border-slate-400"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] text-slate-500 font-semibold uppercase mb-1">Latitude</label>
+                <input
+                  type="number"
+                  step="any"
+                  required
+                  value={lat}
+                  onChange={(e) => setLat(e.target.value)}
+                  className="w-full bg-[#f9fafb] border border-slate-200 text-[#141414] rounded-xl px-3.5 py-2 text-xs font-mono focus:outline-none focus:border-slate-400"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] text-slate-500 font-semibold uppercase mb-1">Longitude</label>
+                <input
+                  type="number"
+                  step="any"
+                  required
+                  value={lng}
+                  onChange={(e) => setLng(e.target.value)}
+                  className="w-full bg-[#f9fafb] border border-slate-200 text-[#141414] rounded-xl px-3.5 py-2 text-xs font-mono focus:outline-none focus:border-slate-400"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="block text-[10px] text-slate-500 font-semibold uppercase mb-1">Radius (km)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0.2"
+                  max="10"
+                  value={radiusKm}
+                  onChange={(e) => setRadiusKm(e.target.value)}
+                  className="w-full bg-[#f9fafb] border border-slate-200 text-[#141414] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-slate-400"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] text-slate-500 font-semibold uppercase mb-1">Caution (°F)</label>
+                <input
+                  type="number"
+                  value={elevatedF}
+                  onChange={(e) => setElevatedF(e.target.value)}
+                  className="w-full bg-[#f9fafb] border border-slate-200 text-[#141414] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-slate-400"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] text-slate-500 font-semibold uppercase mb-1">Extreme (°F)</label>
+                <input
+                  type="number"
+                  value={extremeF}
+                  onChange={(e) => setExtremeF(e.target.value)}
+                  className="w-full bg-[#f9fafb] border border-slate-200 text-[#141414] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-slate-400"
+                />
+              </div>
+            </div>
+
+            {error && (
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium">
+                {error}
+              </div>
+            )}
+          </form>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs">
-          <div>
-            <label className="block text-[10px] text-[#DCD7C9]/70 uppercase mb-1">Work Site Name</label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. Central Valley Solar Plant 4"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full bg-[#3F4E4F] border border-[#A27B5C]/40 text-white rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#A27B5C]"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-[10px] text-[#DCD7C9]/70 uppercase mb-1">Latitude (GPS)</label>
-              <input
-                type="number"
-                step="0.0001"
-                required
-                value={lat}
-                onChange={(e) => setLat(e.target.value)}
-                className="w-full bg-[#3F4E4F] border border-[#A27B5C]/40 text-white rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#A27B5C]"
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] text-[#DCD7C9]/70 uppercase mb-1">Longitude (GPS)</label>
-              <input
-                type="number"
-                step="0.0001"
-                required
-                value={lng}
-                onChange={(e) => setLng(e.target.value)}
-                className="w-full bg-[#3F4E4F] border border-[#A27B5C]/40 text-white rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-[#A27B5C]"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="block text-[10px] text-[#DCD7C9]/70 uppercase mb-1">Coverage Area</label>
-              <select
-                value={radiusKm}
-                onChange={(e) => setRadiusKm(e.target.value)}
-                className="w-full bg-[#3F4E4F] border border-[#A27B5C]/40 text-white rounded-xl px-2.5 py-2.5 text-xs focus:outline-none focus:border-[#A27B5C]"
-              >
-                <option value="0.5">500m Yard</option>
-                <option value="1.0">1.0 km Field</option>
-                <option value="2.0">2.0 km Zone</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-[10px] text-[#DCD7C9]/70 uppercase mb-1">Caution (°F)</label>
-              <input
-                type="number"
-                value={elevatedF}
-                onChange={(e) => setElevatedF(e.target.value)}
-                className="w-full bg-[#3F4E4F] border border-[#A27B5C]/40 text-white rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-[#A27B5C]"
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] text-[#DCD7C9]/70 uppercase mb-1">Extreme (°F)</label>
-              <input
-                type="number"
-                value={extremeF}
-                onChange={(e) => setExtremeF(e.target.value)}
-                className="w-full bg-[#3F4E4F] border border-[#A27B5C]/40 text-white rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-[#A27B5C]"
-              />
-            </div>
-          </div>
-
-          {error && (
-            <div className="p-3 rounded-xl bg-red-900/40 border border-red-500/40 text-red-300 text-xs">
-              {error}
-            </div>
-          )}
-
-          <div className="flex items-center justify-between pt-2 border-t border-[#3F4E4F]">
-            <button type="button" onClick={onClose} className="btn-charcoal border border-[#3F4E4F]">
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-bronze flex items-center gap-2"
-            >
-              <span>{loading ? 'Creating Work Site...' : 'Pinpoint & Save Site'}</span>
-            </button>
-          </div>
-        </form>
+        <div className="p-3.5 border-t border-slate-200 flex items-center justify-between bg-[#ffffff]">
+          <button type="button" onClick={onClose} className="btn-secondary font-semibold">
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="register-site-form"
+            disabled={loading}
+            className="btn-primary"
+          >
+            {loading ? 'Creating Site...' : 'Save & Start Monitoring'}
+          </button>
+        </div>
       </div>
     </div>
   )

@@ -33,45 +33,45 @@ export function HourlyThermalForecastChart({ data }: HourlyThermalForecastChartP
   const getOshaBadge = (ratio: string) => {
     switch (ratio) {
       case '15/45':
-        return 'bg-red-950/60 text-red-300 border-red-500/50'
+        return 'bg-rose-50 text-rose-700 border-rose-200'
       case '30/30':
-        return 'bg-orange-950/60 text-orange-300 border-orange-500/50'
+        return 'bg-orange-50 text-orange-800 border-orange-200'
       case '50/10':
-        return 'bg-yellow-950/60 text-yellow-300 border-yellow-500/50'
+        return 'bg-amber-50 text-amber-800 border-amber-200'
       default:
-        return 'bg-emerald-950/60 text-emerald-300 border-emerald-500/50'
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200'
     }
   }
 
   return (
-    <div className="card-warm p-5 font-mono space-y-4 border-[#3F4E4F] shadow-2xl">
-      <div className="flex flex-wrap items-center justify-between border-b border-[#3F4E4F]/40 pb-3 gap-2">
+    <div className="card-surface p-5 space-y-4 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between border-b border-[#e5e5e5] pb-3 gap-2">
         <div>
-          <h3 className="text-sm font-bold text-white uppercase font-sans tracking-wide">
+          <h3 className="text-xs font-bold text-[#141414] tracking-tight">
             FortyGuard Diurnal Heat Curve & OSHA Shift Trajectory (09:00 - 18:00)
           </h3>
-          <span className="text-[10px] text-[#A27B5C] font-semibold">
-            Hourly Asphalt Thermal Absorption vs Shaded Canopy Microclimate
+          <span className="text-[11px] text-slate-500 font-medium">
+            Hourly Surface Asphalt Absorption vs Shaded Canopy Microclimate
           </span>
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-4 text-[10px]">
+        <div className="flex items-center gap-4 text-xs font-semibold">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />
-            <span className="text-red-400 font-bold">Surface Asphalt</span>
+            <span className="text-rose-600">Surface Asphalt</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" />
-            <span className="text-yellow-300 font-bold">Ambient Air</span>
+            <span className="text-amber-600">Ambient Air</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
-            <span className="text-emerald-400 font-bold">Canopy Refuge</span>
+            <span className="text-emerald-600">Canopy Refuge</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-purple-500 ring-2 ring-purple-400/50 animate-pulse" />
-            <span className="text-purple-300 font-bold">Recorded Snapshots</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-purple-600 ring-2 ring-purple-300 animate-pulse" />
+            <span className="text-purple-700">Recorded Snapshots</span>
           </div>
         </div>
       </div>
@@ -88,16 +88,15 @@ export function HourlyThermalForecastChart({ data }: HourlyThermalForecastChartP
                   y1={getY(temp)}
                   x2={width - margin.right}
                   y2={getY(temp)}
-                  stroke="#3F4E4F"
-                  strokeOpacity="0.4"
+                  stroke="#E5E7EB"
                   strokeDasharray="3 3"
                 />
                 <text
                   x={margin.left - 8}
                   y={getY(temp)}
-                  fill="#DCD7C9"
-                  opacity="0.6"
+                  fill="#6B7280"
                   fontSize="10"
+                  fontWeight="600"
                   textAnchor="end"
                   dominantBaseline="middle"
                   fontFamily="monospace"
@@ -108,10 +107,10 @@ export function HourlyThermalForecastChart({ data }: HourlyThermalForecastChartP
             )
           })}
 
-          {/* Area Fill Gradient under Surface curve */}
+          {/* Area Fill Gradient */}
           <path
             d={`${surfacePath} L ${getX(data.length - 1)} ${height - margin.bottom} L ${getX(0)} ${height - margin.bottom} Z`}
-            fill="rgba(239, 68, 68, 0.08)"
+            fill="rgba(239, 68, 68, 0.05)"
           />
 
           {/* Spline Paths */}
@@ -143,36 +142,35 @@ export function HourlyThermalForecastChart({ data }: HourlyThermalForecastChartP
                     y1={margin.top}
                     x2={getX(i)}
                     y2={height - margin.bottom}
-                    stroke="#A27B5C"
+                    stroke="#94A3B8"
                     strokeWidth="1.5"
                     strokeDasharray="4 4"
                   />
                 )}
 
-                {/* If recorded snapshot, render special glowing halo */}
+                {/* If recorded snapshot, render glowing halo */}
                 {isRecorded && (
                   <circle
                     cx={getX(i)}
                     cy={getY(d.ambient_temp_f)}
-                    r={9}
+                    r={8}
                     fill="none"
-                    stroke="#A855F7"
+                    stroke="#9333EA"
                     strokeWidth="2"
-                    className="animate-ping opacity-60"
+                    className="animate-ping opacity-50"
                   />
                 )}
 
                 <circle cx={getX(i)} cy={getY(d.surface_temp_f)} r={hoverIdx === i ? 5 : 3.5} fill="#EF4444" />
-                <circle cx={getX(i)} cy={getY(d.ambient_temp_f)} r={hoverIdx === i ? 5 : (isRecorded ? 4.5 : 3.5)} fill={isRecorded ? '#A855F7' : '#F59E0B'} />
+                <circle cx={getX(i)} cy={getY(d.ambient_temp_f)} r={hoverIdx === i ? 5 : (isRecorded ? 4.5 : 3.5)} fill={isRecorded ? '#9333EA' : '#F59E0B'} />
                 <circle cx={getX(i)} cy={getY(d.canopy_temp_f)} r={hoverIdx === i ? 5 : 3.5} fill="#10B981" />
 
                 {/* X Axis Time Labels */}
                 <text
                   x={getX(i)}
                   y={height - margin.bottom + 18}
-                  fill={isRecorded ? '#A855F7' : '#DCD7C9'}
-                  fontWeight={isRecorded ? 'bold' : 'normal'}
-                  opacity={isRecorded ? 1 : 0.8}
+                  fill={isRecorded ? '#9333EA' : '#4B5563'}
+                  fontWeight={isRecorded ? 'bold' : '600'}
                   fontSize="10"
                   textAnchor="middle"
                   fontFamily="monospace"
@@ -187,33 +185,33 @@ export function HourlyThermalForecastChart({ data }: HourlyThermalForecastChartP
         {/* Hover Tooltip Box */}
         {hoverIdx !== null && data[hoverIdx] && (
           <div
-            className="absolute bg-[#1A2224]/95 backdrop-blur-md border border-[#A27B5C] p-3 rounded-xl shadow-2xl text-xs text-[#DCD7C9] pointer-events-none z-10 space-y-1 w-64 font-mono"
+            className="absolute bg-[#ffffff]/95 backdrop-blur-md border border-slate-200 p-3 rounded-xl shadow-xl text-xs text-[#141414] pointer-events-none z-10 space-y-1 w-64"
             style={{
               left: Math.min(Math.max(getX(hoverIdx) - 100, 10), width - 270) + 'px',
               top: '10px'
             }}
           >
-            <div className="font-bold text-white border-b border-[#3F4E4F] pb-1 flex justify-between">
+            <div className="font-bold text-[#141414] border-b border-slate-100 pb-1 flex justify-between">
               <span>{data[hoverIdx].time_label}</span>
-              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${data[hoverIdx].point_type === 'recorded' ? 'bg-purple-900/60 text-purple-300 border border-purple-500/40' : 'text-[#A27B5C]'}`}>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${data[hoverIdx].point_type === 'recorded' ? 'bg-purple-50 text-purple-700 border border-purple-200' : 'text-slate-600'}`}>
                 {data[hoverIdx].point_type === 'recorded' ? '🟣 DB Snapshot' : '📈 Diurnal Model'}
               </span>
             </div>
-            <div className="text-red-400 flex justify-between">
+            <div className="text-rose-600 flex justify-between font-medium">
               <span>Ground Asphalt:</span>
-              <strong>{data[hoverIdx].surface_temp_f}°F</strong>
+              <strong className="font-bold">{data[hoverIdx].surface_temp_f}°F</strong>
             </div>
-            <div className="text-yellow-300 flex justify-between">
+            <div className="text-amber-600 flex justify-between font-medium">
               <span>Ambient Weather:</span>
-              <strong>{data[hoverIdx].ambient_temp_f}°F</strong>
+              <strong className="font-bold">{data[hoverIdx].ambient_temp_f}°F</strong>
             </div>
-            <div className="text-emerald-400 flex justify-between">
+            <div className="text-emerald-600 flex justify-between font-medium">
               <span>Shaded Canopy:</span>
-              <strong>{data[hoverIdx].canopy_temp_f}°F</strong>
+              <strong className="font-bold">{data[hoverIdx].canopy_temp_f}°F</strong>
             </div>
-            <div className="pt-1 text-[10px] text-[#DCD7C9]/60 border-t border-[#3F4E4F]/40 flex justify-between">
+            <div className="pt-1 text-[10px] text-slate-500 border-t border-slate-100 flex justify-between font-semibold">
               <span>Solar: {data[hoverIdx].solar_radiation_w_m2} W/m²</span>
-              <span className="text-white font-bold">OSHA: {data[hoverIdx].work_rest_ratio}</span>
+              <span className="text-[#141414]">OSHA: {data[hoverIdx].work_rest_ratio}</span>
             </div>
           </div>
         )}
@@ -223,14 +221,13 @@ export function HourlyThermalForecastChart({ data }: HourlyThermalForecastChartP
       <div className="flex overflow-x-auto gap-2 pt-1">
         {data.map((d, i) => (
           <div key={i} className="flex-1 min-w-[65px] text-center space-y-0.5">
-            <div className={`text-[10px] font-bold py-1 px-1 rounded-lg border ${getOshaBadge(d.work_rest_ratio)}`}>
+            <div className={`text-[10px] font-bold py-1 px-1 rounded-lg border shadow-sm ${getOshaBadge(d.work_rest_ratio)}`}>
               {d.work_rest_ratio}
             </div>
-            <span className="text-[8px] text-[#DCD7C9]/50 block">{d.time_label}</span>
+            <span className="text-[9px] text-slate-500 font-semibold block">{d.time_label}</span>
           </div>
         ))}
       </div>
     </div>
   )
 }
-
