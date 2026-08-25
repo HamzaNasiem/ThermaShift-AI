@@ -74,29 +74,34 @@ export default function AudioVoicePlayer({
   if (!hasSpeechSupport) return null
 
   return (
-    <div className="card-warm p-4 font-mono space-y-3 border-[#A27B5C]/50 shadow-xl bg-gradient-to-r from-[#242D30] to-[#1E2628]">
-      <div className="flex items-center justify-between border-b border-[#3F4E4F]/40 pb-2">
+    <div className="card-surface p-4 space-y-3">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
         <div className="flex items-center gap-2">
-          <span className="text-base">🔊</span>
+          <div className="w-6 h-6 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            </svg>
+          </div>
           <div>
-            <h4 className="text-xs font-bold text-white uppercase font-sans tracking-wide">
-              CALL-E Audio Dispatch Preview
+            <h4 className="text-xs font-semibold text-slate-200">
+              Voice Dispatch Preview
             </h4>
-            <span className="text-[9px] text-[#A27B5C] font-semibold">
-              Synthesized Voice Warning (Browser Audio Simulator)
-            </span>
+            <p className="text-[10px] text-slate-400">
+              Synthesized Audio Simulator
+            </p>
           </div>
         </div>
 
         {/* Language Pill Switcher */}
-        <div className="flex items-center gap-1 bg-[#1A2224] p-0.5 rounded-lg border border-[#3F4E4F] text-[10px]">
+        <div className="flex items-center gap-1 bg-[#141B20] p-0.5 rounded-lg border border-slate-800 text-[11px]">
           <button
             onClick={() => {
               handleStopAudio()
               setCurrentLang('en')
             }}
-            className={`px-2 py-0.5 rounded font-bold transition-all ${
-              currentLang === 'en' ? 'bg-[#A27B5C] text-white' : 'text-[#DCD7C9]/60 hover:text-white'
+            className={`px-2 py-0.5 rounded-md font-medium transition-colors ${
+              currentLang === 'en' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             English
@@ -106,8 +111,8 @@ export default function AudioVoicePlayer({
               handleStopAudio()
               setCurrentLang('ur')
             }}
-            className={`px-2 py-0.5 rounded font-bold transition-all ${
-              currentLang === 'ur' ? 'bg-[#A27B5C] text-white' : 'text-[#DCD7C9]/60 hover:text-white'
+            className={`px-2 py-0.5 rounded-md font-medium transition-colors ${
+              currentLang === 'ur' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             اردو
@@ -115,54 +120,55 @@ export default function AudioVoicePlayer({
         </div>
       </div>
 
-      {/* Script Text Box */}
-      <div className="p-3 rounded-xl bg-[#1A2224] border border-[#3F4E4F]/60 text-xs text-[#DCD7C9] space-y-1">
-        <div className="flex items-center justify-between text-[9px] text-[#A27B5C] uppercase font-bold">
-          <span>AI Task Transmission Script:</span>
-          <span>{currentLang === 'en' ? 'EN-US Authorized' : 'UR-PK Regional'}</span>
+      {/* Script Box */}
+      <div className="p-3 rounded-xl bg-[#141B20] border border-slate-800/80 space-y-1 text-xs">
+        <div className="flex items-center justify-between text-[10px] text-slate-400">
+          <span>Broadcast Transmission Script:</span>
+          <span>{currentLang === 'en' ? 'EN-US' : 'UR-PK'}</span>
         </div>
-        <p className={`text-xs leading-relaxed ${currentLang === 'ur' ? 'text-right font-sans text-emerald-300 font-semibold' : 'text-white'}`}>
+        <p className={`text-[11px] leading-relaxed text-slate-300 ${currentLang === 'ur' ? 'text-right font-sans text-emerald-300 font-medium' : ''}`}>
           {currentLang === 'ur' ? urduScript : englishScript}
         </p>
       </div>
 
-      {/* Play Controls & Audio Equalizer Bars */}
-      <div className="flex items-center justify-between pt-1 flex-wrap gap-2">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handlePlayAudio}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono transition-all flex items-center gap-1.5 shadow-md ${
-              isPlaying
-                ? 'bg-red-800 hover:bg-red-700 text-white animate-pulse'
-                : 'bg-emerald-700 hover:bg-emerald-600 text-white'
-            }`}
-          >
-            <span>{isPlaying ? '⏹ Stop Voice' : '▶ Play Voice Warning'}</span>
-          </button>
-
-          {onDirectCallClick && (
-            <button
-              onClick={onDirectCallClick}
-              className="px-3 py-1.5 rounded-xl bg-[#1A2224] hover:bg-[#3F4E4F] text-[#A27B5C] hover:text-white text-xs font-bold font-mono border border-[#A27B5C]/40 transition-all flex items-center gap-1"
-              title="Call your real mobile phone via CALL-E"
-            >
-              <span>📱</span>
-              <span>Cellular Call</span>
-            </button>
+      {/* Controls */}
+      <div className="flex items-center justify-between pt-1 gap-2">
+        <button
+          onClick={handlePlayAudio}
+          className={`btn-primary text-xs ${
+            isPlaying ? 'bg-rose-600 hover:bg-rose-500 animate-pulse' : ''
+          }`}
+        >
+          {isPlaying ? (
+            <>
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <rect x="6" y="6" width="12" height="12" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>Stop Audio</span>
+            </>
+          ) : (
+            <>
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>Play Warning</span>
+            </>
           )}
-        </div>
+        </button>
 
-        {isPlaying && (
-          <div className="flex items-center gap-1">
-            <span className="w-1 h-4 bg-emerald-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-            <span className="w-1 h-6 bg-emerald-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-            <span className="w-1 h-3 bg-emerald-400 rounded-full animate-bounce" />
-            <span className="w-1 h-5 bg-emerald-400 rounded-full animate-bounce [animation-delay:-0.2s]" />
-            <span className="text-[10px] text-emerald-400 font-bold ml-1.5 uppercase">Broadcasting...</span>
-          </div>
+        {onDirectCallClick && (
+          <button
+            onClick={onDirectCallClick}
+            className="btn-secondary text-xs"
+            title="Dispatch call to real phone"
+          >
+            <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+            </svg>
+            <span>Dial Cellular</span>
+          </button>
         )}
       </div>
     </div>
   )
 }
-

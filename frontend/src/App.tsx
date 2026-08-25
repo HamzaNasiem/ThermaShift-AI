@@ -10,10 +10,10 @@ function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
   return (
     <Link
       to={to}
-      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono tracking-wide transition-all ${
+      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
         active
-          ? 'bg-[#A27B5C] text-white shadow-md'
-          : 'text-[#DCD7C9]/70 hover:text-white hover:bg-white/5'
+          ? 'bg-slate-800 text-white shadow-sm'
+          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
       }`}
     >
       {children}
@@ -23,31 +23,36 @@ function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
 
 function Header() {
   return (
-    <header className="bg-[#1E2628] text-[#DCD7C9] border-b border-[#3F4E4F]/70 shadow-xl">
-      <div className="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
+    <header className="bg-[#0E1317] border-b border-slate-800/80 sticky top-0 z-50 backdrop-blur-md bg-opacity-90">
+      <div className="max-w-[1600px] mx-auto px-6 h-14 flex items-center justify-between">
+        {/* Brand Logo */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-[#A27B5C] flex items-center justify-center text-white font-black text-base shadow-sm">
-            ⚡
+          <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-bold text-sm shadow-inner">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
           </div>
-          <div>
-            <span className="font-black text-white text-base font-sans block leading-none">
-              ThermaShift AI
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-white text-sm tracking-tight">
+              ThermaShift
             </span>
-            <span className="text-[9px] font-mono text-[#A27B5C] tracking-widest uppercase font-bold mt-0.5 block">
-              FortyGuard Heat Safety OS
+            <span className="text-[10px] text-emerald-400/90 font-medium px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
+              FortyGuard OS
             </span>
           </div>
         </div>
 
-        <nav className="flex items-center gap-2">
+        {/* Navigation Tabs */}
+        <nav className="flex items-center gap-1 bg-[#141B20] p-1 rounded-xl border border-slate-800/70">
           <NavLink to="/">Mission Control</NavLink>
           <NavLink to="/sites">Work Sites</NavLink>
-          <NavLink to="/workers">Field Workers</NavLink>
+          <NavLink to="/workers">Field Workforce</NavLink>
         </nav>
 
-        <div className="flex items-center gap-2 text-xs text-[#DCD7C9] font-mono font-bold bg-[#242D30] px-3 py-1.5 rounded-xl border border-[#3F4E4F] shadow-sm">
+        {/* Live System Badge */}
+        <div className="flex items-center gap-2 text-xs text-slate-300 font-medium bg-[#141B20] px-3 py-1.5 rounded-xl border border-slate-800">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          SYSTEM LIVE
+          <span className="text-[11px] text-slate-300">Live Heat Guardian</span>
         </div>
       </div>
     </header>
@@ -57,10 +62,10 @@ function Header() {
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-[#1A2224] text-[#DCD7C9] flex flex-col font-sans">
+      <div className="min-h-screen bg-[#0B0F12] text-slate-200 flex flex-col font-sans selection:bg-emerald-500/20 selection:text-emerald-300">
         <Header />
-        <main className="flex-1 max-w-[1600px] w-full mx-auto px-6 py-6">
-          <ErrorBoundary fallbackTitle="Application Error">
+        <main className="flex-1 max-w-[1600px] w-full mx-auto px-6 py-5">
+          <ErrorBoundary fallbackTitle="System Component Error">
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/sites" element={<Sites />} />
@@ -72,4 +77,3 @@ export default function App() {
     </BrowserRouter>
   )
 }
-

@@ -22,9 +22,9 @@ const BASEMAP_TILES = {
 function getFortyGuardSpectralColor(tempF: number, minTemp: number, maxTemp: number) {
   const norm = Math.max(0, Math.min(1, (tempF - minTemp) / (maxTemp - minTemp || 1)))
   
-  // 12-Class Spectral Hex Gradient matching FortyGuard dashboard.fortyguard.com
+  // 12-Class Spectral Hex Gradient matching FortyGuard
   const colors = [
-    '#313695', // Deep Blue (Coolest)
+    '#313695', // Deep Blue
     '#4575b4', // Navy
     '#74add1', // Sky Blue
     '#abd9e9', // Light Blue
@@ -35,7 +35,7 @@ function getFortyGuardSpectralColor(tempF: number, minTemp: number, maxTemp: num
     '#f46d43', // Red Orange
     '#d73027', // Bright Red
     '#a50026', // Deep Crimson
-    '#67001f'  // Extreme Purple/Bordeaux (Hottest Hotspot)
+    '#67001f'  // Extreme Bordeaux
   ]
 
   const index = Math.min(colors.length - 1, Math.floor(norm * colors.length))
@@ -59,7 +59,7 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
 
   const [basemap, setBasemap] = useState<'carto_dark' | 'voyager' | 'satellite'>('carto_dark')
   const [granularity, setGranularity] = useState<'100' | '80' | '60'>('80')
-  const [opacity, setOpacity] = useState<number>(0.78)
+  const [opacity, setOpacity] = useState<number>(0.75)
   const [selectedPoint, setSelectedPoint] = useState<any>(null)
   const [showMesh, setShowMesh] = useState(true)
   const [showEscapeVector, setShowEscapeVector] = useState(true)
@@ -141,14 +141,14 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
       }
       .vector-tag-badge {
         background: rgba(16, 185, 129, 0.95);
-        border: 1.5px solid #34D399;
+        border: 1px solid #34D399;
         color: #FFFFFF;
-        font-weight: 800;
-        font-family: monospace;
+        font-weight: 600;
+        font-family: 'Inter', system-ui, sans-serif;
         font-size: 11px;
-        padding: 5px 12px;
+        padding: 4px 10px;
         border-radius: 9999px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.5);
         white-space: nowrap;
       }
     `
@@ -160,7 +160,7 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
     }
   }, [])
 
-  // Render High-Density FortyGuard Thermal Mesh (Matching dashboard.fortyguard.com)
+  // Render High-Density FortyGuard Thermal Mesh
   useEffect(() => {
     if (!mapRef.current || !thermalMeshLayerRef.current || !site?.polygon_geojson?.coordinates?.[0]) return
 
@@ -183,7 +183,7 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
       const maxSurfaceF = microclimate?.surface_temp_f ?? (baseTempF + 22.0)
       const minCanopyF = Math.round((baseTempF - 18.0) * 10) / 10
 
-      // High-Density Grid Dimension based on Granularity (60m = 32x32, 80m = 24x24, 100m = 18x18)
+      // High-Density Grid Dimension (60m = 32x32, 80m = 24x24, 100m = 18x18)
       const gridSteps = granularity === '60' ? 32 : granularity === '80' ? 24 : 18
       const dLat = (maxLat - minLat) / gridSteps
       const dLng = (maxLng - minLng) / gridSteps
@@ -204,18 +204,13 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
             const cLat = (cellMinLat + cellMaxLat) / 2
             const cLng = (cellMinLng + cellMaxLng) / 2
 
-            // Mathematical Thermal Heat Diffusion Field across Terrain
-            // Hotspot clustered near industrial asphalt loading bay (r < gridSteps * 0.4, c < gridSteps * 0.4)
-            // Cooling Canopy clustered in shaded refuge zone (r > gridSteps * 0.65, c > gridSteps * 0.65)
             const distToHotspot = Math.hypot(r - gridSteps * 0.25, c - gridSteps * 0.25) / gridSteps
             const distToRefuge = Math.hypot(r - gridSteps * 0.78, c - gridSteps * 0.78) / gridSteps
 
             let cellTemp = baseTempF + (1.0 - distToHotspot * 1.6) * 24.0 - (1.0 - Math.min(1, distToRefuge * 2.0)) * 26.0
-            // Subtle noise variation matching real FortyGuard satellite sensor granularity
             const microNoise = Math.sin(r * 3.7 + c * 2.1) * 1.8 + Math.cos(r * 1.3 - c * 2.9) * 1.4
             cellTemp = Math.round((cellTemp + microNoise) * 10) / 10
 
-            // Clamp
             cellTemp = Math.max(minCanopyF - 2, Math.min(maxSurfaceF + 3, cellTemp))
             const cellTempC = Math.round(((cellTemp - 32) * 5) / 9 * 10) / 10
 
@@ -238,8 +233,8 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
                 color: colorHex,
                 fillColor: colorHex,
                 fillOpacity: opacity,
-                weight: 0.25,
-                opacity: 0.4,
+                weight: 0.2,
+                opacity: 0.3,
               }
             )
 
@@ -261,14 +256,14 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
         }
       }
 
-      // Outer AOI Boundary Polygon (Crisp FortyGuard Crimson/Gold Halo)
+      // Outer AOI Boundary Polygon
       if (boundaryLayerRef.current) {
         const outerPoly = L.polygon(coords.map((c: number[]) => [c[1], c[0]] as L.LatLngTuple), {
-          color: '#E11D48',
-          weight: 2.5,
+          color: '#F43F5E',
+          weight: 2,
           fillColor: 'transparent',
-          dashArray: '5 5',
-          opacity: 0.9,
+          dashArray: '4 4',
+          opacity: 0.85,
         })
         outerPoly.addTo(boundaryLayerRef.current)
       }
@@ -277,27 +272,27 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
       if (showEscapeVector && hotspotCoords && refugeCoords && vectorLayerRef.current) {
         const escapeLine = L.polyline([hotspotCoords, refugeCoords], {
           color: '#10B981',
-          weight: 4,
-          dashArray: '8 8',
+          weight: 3.5,
+          dashArray: '6 6',
           className: 'glowing-dash-path',
         })
         escapeLine.addTo(vectorLayerRef.current)
 
         // Hotspot Pulse Marker
         L.circleMarker(hotspotCoords, {
-          radius: 8,
-          fillColor: '#DC2626',
+          radius: 7,
+          fillColor: '#EF4444',
           color: '#FFFFFF',
-          weight: 2.5,
+          weight: 2,
           fillOpacity: 0.95,
         }).addTo(vectorLayerRef.current)
 
         // Canopy Refuge Marker
         L.circleMarker(refugeCoords, {
-          radius: 9,
-          fillColor: '#059669',
+          radius: 8,
+          fillColor: '#10B981',
           color: '#FFFFFF',
-          weight: 2.5,
+          weight: 2,
           fillOpacity: 0.95,
         }).addTo(vectorLayerRef.current)
 
@@ -309,39 +304,39 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
 
         const tagIcon = L.divIcon({
           className: 'vector-tag-container',
-          html: `<div class="vector-tag-badge">⚡ ThermaShift: -${reliefTemp}°F Relief (${distance}m)</div>`,
-          iconSize: [230, 26],
-          iconAnchor: [115, 13]
+          html: `<div class="vector-tag-badge">Relocation: -${reliefTemp}°F (${distance}m)</div>`,
+          iconSize: [200, 24],
+          iconAnchor: [100, 12]
         })
         L.marker([midLat, midLng], { icon: tagIcon }).addTo(vectorLayerRef.current)
       }
 
       if (bounds && bounds.isValid() && mapRef.current) {
         try {
-          mapRef.current.fitBounds(bounds, { padding: [35, 35], maxZoom: 16 })
+          mapRef.current.fitBounds(bounds, { padding: [30, 30], maxZoom: 16 })
         } catch {}
       }
     } catch (err) {
-      console.warn('HeatMap render error handled:', err)
+      console.warn('HeatMap render notice:', err)
     }
   }, [site, riskLevel, snapshot, microclimate, granularity, opacity, showMesh, showEscapeVector])
 
   return (
-    <div className="flex flex-col h-full font-mono bg-[#1A2224] text-[#DCD7C9] rounded-2xl overflow-hidden border border-[#3F4E4F] shadow-2xl relative">
+    <div className="flex flex-col h-full bg-[#11171B] text-slate-200 rounded-2xl overflow-hidden border border-slate-800 shadow-xl relative">
       
-      {/* Top Map Control Bar (FortyGuard Official SaaS Styling) */}
-      <div className="p-3 bg-[#242D30] border-b border-[#3F4E4F] flex flex-wrap items-center justify-between gap-3 text-xs">
+      {/* Top Map Control Bar */}
+      <div className="p-3 bg-[#0E1317] border-b border-slate-800/90 flex flex-wrap items-center justify-between gap-3 text-xs">
         {/* Basemap Switcher */}
-        <div className="flex items-center gap-1 bg-[#1A2224] p-1 rounded-xl border border-[#3F4E4F]">
-          <span className="text-[10px] text-[#A27B5C] font-bold uppercase px-1.5">Map:</span>
+        <div className="flex items-center gap-1 bg-[#141B20] p-1 rounded-xl border border-slate-800">
+          <span className="text-[10px] text-slate-400 font-medium px-1.5 uppercase">Basemap:</span>
           {(['carto_dark', 'voyager', 'satellite'] as const).map((mode) => (
             <button
               key={mode}
               onClick={() => setBasemap(mode)}
-              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
                 basemap === mode
-                  ? 'bg-[#A27B5C] text-white shadow-md'
-                  : 'text-[#DCD7C9]/60 hover:text-white'
+                  ? 'bg-slate-800 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               {BASEMAP_TILES[mode].name}
@@ -349,28 +344,28 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
           ))}
         </div>
 
-        {/* Granularity Selector (Matching dashboard.fortyguard.com) */}
-        <div className="flex items-center gap-1 bg-[#1A2224] p-1 rounded-xl border border-[#3F4E4F]">
-          <span className="text-[10px] text-[#A27B5C] font-bold uppercase px-1.5">Tile Mesh:</span>
+        {/* Granularity Selector */}
+        <div className="flex items-center gap-1 bg-[#141B20] p-1 rounded-xl border border-slate-800">
+          <span className="text-[10px] text-slate-400 font-medium px-1.5 uppercase">Resolution:</span>
           {(['60', '80', '100'] as const).map((g) => (
             <button
               key={g}
               onClick={() => setGranularity(g)}
-              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
                 granularity === g
-                  ? 'bg-emerald-800 text-white shadow-md'
-                  : 'text-[#DCD7C9]/60 hover:text-white'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              {g} × {g} m
+              {g}m
             </button>
           ))}
         </div>
 
         {/* Layer Toggles & Opacity Slider */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 bg-[#1A2224] px-2.5 py-1 rounded-xl border border-[#3F4E4F]">
-            <span className="text-[10px] text-[#DCD7C9]/60">Opacity:</span>
+        <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5 bg-[#141B20] px-2.5 py-1 rounded-xl border border-slate-800">
+            <span className="text-[11px] text-slate-400">Opacity:</span>
             <input
               type="range"
               min="0.3"
@@ -378,31 +373,31 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
               step="0.05"
               value={opacity}
               onChange={(e) => setOpacity(parseFloat(e.target.value))}
-              className="w-16 h-1 bg-[#3F4E4F] rounded-lg cursor-pointer accent-[#A27B5C]"
+              className="w-16 h-1 bg-slate-700 rounded-lg cursor-pointer accent-emerald-500"
             />
-            <span className="text-[10px] text-white font-bold">{Math.round(opacity * 100)}%</span>
+            <span className="text-[11px] text-slate-300 font-semibold tabular-nums">{Math.round(opacity * 100)}%</span>
           </div>
 
           <button
             onClick={() => setShowMesh(!showMesh)}
-            className={`px-3 py-1 rounded-xl font-bold transition-all text-[10px] border ${
+            className={`px-3 py-1.5 rounded-xl font-medium transition-colors text-xs border ${
               showMesh
-                ? 'bg-[#A27B5C] text-white border-[#A27B5C]'
-                : 'bg-[#1A2224] text-[#DCD7C9]/50 border-[#3F4E4F]'
+                ? 'bg-slate-800 text-white border-slate-700'
+                : 'bg-[#141B20] text-slate-400 border-slate-800'
             }`}
           >
-            🔥 Heatmap Layer
+            Heatmap
           </button>
 
           <button
             onClick={() => setShowEscapeVector(!showEscapeVector)}
-            className={`px-3 py-1 rounded-xl font-bold transition-all text-[10px] border ${
+            className={`px-3 py-1.5 rounded-xl font-medium transition-colors text-xs border ${
               showEscapeVector
-                ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/50'
-                : 'bg-[#1A2224] text-[#DCD7C9]/50 border-[#3F4E4F]'
+                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                : 'bg-[#141B20] text-slate-400 border-slate-800'
             }`}
           >
-            ⚡ Escape Vector
+            Vector Line
           </button>
         </div>
       </div>
@@ -411,75 +406,75 @@ export default function HeatMap({ site, riskLevel, snapshot, microclimate }: Hea
       <div className="relative flex-1 min-h-[440px] w-full">
         <div ref={containerRef} className="w-full h-full" />
 
-        {/* FortyGuard Official Information Modal Card (Triggered on Click) */}
+        {/* Selected Point Telemetry Modal Card */}
         {selectedPoint && (
-          <div className="absolute top-4 right-4 z-[1000] bg-[#1A2224]/95 backdrop-blur-md border-2 border-[#A27B5C] text-[#DCD7C9] rounded-2xl p-4 w-72 shadow-2xl space-y-3 font-mono animate-fade-in">
-            <div className="flex items-center justify-between border-b border-[#3F4E4F] pb-2">
+          <div className="absolute top-4 right-4 z-[1000] bg-[#11171B]/95 backdrop-blur-md border border-slate-700 text-slate-200 rounded-2xl p-4 w-72 shadow-2xl space-y-3 animate-fade-in">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                <h4 className="font-bold text-white text-xs uppercase font-sans">
-                  FortyGuard Tile Telemetry
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <h4 className="font-semibold text-white text-xs">
+                  Tile Telemetry
                 </h4>
               </div>
               <button
                 onClick={() => setSelectedPoint(null)}
-                className="text-white/60 hover:text-white font-bold text-sm"
+                className="text-slate-400 hover:text-white font-bold text-sm"
               >
                 ✕
               </button>
             </div>
 
-            <div className="space-y-1.5 text-xs">
-              <div className="flex justify-between bg-[#242D30] p-2 rounded-lg">
-                <span className="text-[#DCD7C9]/60">Surface Temp:</span>
-                <span className="font-bold text-red-400 text-sm">{selectedPoint.tempF}°F ({selectedPoint.tempC}°C)</span>
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between bg-[#141B20] p-2 rounded-lg border border-slate-800/80">
+                <span className="text-slate-400">Surface Temp:</span>
+                <span className="font-bold text-rose-400 tabular-nums">{selectedPoint.tempF}°F ({selectedPoint.tempC}°C)</span>
               </div>
-              <div className="flex justify-between bg-[#242D30] p-2 rounded-lg">
-                <span className="text-[#DCD7C9]/60">GPS Coordinates:</span>
-                <span className="font-bold text-[#A27B5C] text-[10px]">{selectedPoint.lat}, {selectedPoint.lng}</span>
+              <div className="flex justify-between bg-[#141B20] p-2 rounded-lg border border-slate-800/80">
+                <span className="text-slate-400">Coordinates:</span>
+                <span className="font-mono text-slate-300 text-[11px]">{selectedPoint.lat}, {selectedPoint.lng}</span>
               </div>
-              <div className="flex justify-between bg-[#242D30] p-2 rounded-lg">
-                <span className="text-[#DCD7C9]/60">Surface Type:</span>
-                <span className="font-bold text-white text-[11px] truncate max-w-[140px]">{selectedPoint.surfaceType}</span>
+              <div className="flex justify-between bg-[#141B20] p-2 rounded-lg border border-slate-800/80">
+                <span className="text-slate-400">Surface Type:</span>
+                <span className="font-medium text-slate-200 truncate max-w-[130px]">{selectedPoint.surfaceType}</span>
               </div>
-              <div className="bg-[#242D30] p-2 rounded-lg space-y-0.5">
-                <span className="text-[#DCD7C9]/60 text-[10px] block">OSHA Heat Protocol:</span>
-                <span className="font-bold text-yellow-300 text-[11px] block">{selectedPoint.oshaRatio}</span>
+              <div className="bg-[#141B20] p-2 rounded-lg border border-slate-800/80 space-y-0.5">
+                <span className="text-slate-400 text-[10px] block">OSHA Protocol:</span>
+                <span className="font-semibold text-amber-300 text-xs block">{selectedPoint.oshaRatio}</span>
               </div>
             </div>
 
             <button
               onClick={() => setSelectedPoint(null)}
-              className="w-full py-1.5 rounded-xl bg-[#242D30] hover:bg-[#3F4E4F] text-white text-xs font-bold transition-all border border-[#3F4E4F]"
+              className="w-full py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition-colors border border-slate-700"
             >
-              Close Information
+              Close
             </button>
           </div>
         )}
 
-        {/* FortyGuard Official Spectral Temperature Legend Bar (Bottom Left) */}
-        <div className="absolute bottom-4 left-4 z-[999] bg-[#1A2224]/90 backdrop-blur-md p-3 rounded-2xl border border-[#3F4E4F] shadow-2xl font-mono text-[10px] space-y-2 max-w-xs">
-          <div className="flex items-center justify-between text-white font-bold">
+        {/* Spectral Temperature Legend Bar */}
+        <div className="absolute bottom-4 left-4 z-[999] bg-[#11171B]/90 backdrop-blur-md p-3 rounded-2xl border border-slate-800 shadow-2xl text-xs space-y-2 max-w-xs">
+          <div className="flex items-center justify-between text-slate-300 font-medium">
             <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#A27B5C]"></span>
-              FortyGuard Spectral Ramp
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              FortyGuard Spectral Scale
             </span>
-            <span className="text-[#A27B5C]">°F Scale</span>
+            <span className="text-slate-400 text-[10px]">°F</span>
           </div>
 
-          <div className="w-full h-3 rounded-full overflow-hidden shadow-inner bg-gradient-to-r from-[#313695] via-[#ffffbf] via-[#fdae61] to-[#67001f]" />
+          <div className="w-full h-2.5 rounded-full overflow-hidden shadow-inner bg-gradient-to-r from-[#313695] via-[#ffffbf] via-[#fdae61] to-[#67001f]" />
 
-          <div className="flex items-center justify-between text-[9px] text-[#DCD7C9]/70 font-semibold">
-            <span>&lt; 84°F (Cool)</span>
-            <span>98°F (Elevated)</span>
-            <span>&gt; 118°F (Extreme)</span>
+          <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium">
+            <span>&lt;84°F Cool</span>
+            <span>98°F Elevated</span>
+            <span>&gt;118°F Extreme</span>
           </div>
         </div>
 
-        {/* Live GPS Cursor Box (Bottom Right) */}
+        {/* Live GPS Cursor Box */}
         {cursorCoords && (
-          <div className="absolute bottom-4 right-4 z-[999] bg-[#1A2224]/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-[#3F4E4F] text-[10px] text-[#A27B5C] font-mono shadow-xl">
-            📍 {cursorCoords.lat}, {cursorCoords.lng}
+          <div className="absolute bottom-4 right-4 z-[999] bg-[#11171B]/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 text-[11px] text-slate-400 font-mono shadow-xl">
+            {cursorCoords.lat}, {cursorCoords.lng}
           </div>
         )}
       </div>

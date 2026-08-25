@@ -38,7 +38,6 @@ export default function Dashboard() {
   const [showTelemetryModal, setShowTelemetryModal] = useState(false)
   const [showOshaReportModal, setShowOshaReportModal] = useState(false)
 
-
   function loadSites() {
     getSites().then((data) => {
       setSites(data)
@@ -74,11 +73,10 @@ export default function Dashboard() {
 
   const { snapshot, alerts, workers, loading } = useLiveHeat(selectedSiteId)
 
-  // Use real snapshot data only — never show fake temperature numbers
+  // Real snapshot telemetry only
   const currentTempF: number | null = snapshot ? Math.round(snapshot.temperature_f * 10) / 10 : (microclimate ? microclimate.ambient_temp_f : null)
   const riskLevel: RiskLevel = (snapshot?.risk_level as RiskLevel) ?? (currentTempF && currentTempF >= 108 ? 'extreme' : 'elevated')
 
-  // Manual trigger for live demo — calls real FortyGuard + CALL-E via backend
   async function handleEmergencySpikeToggle() {
     if (!selectedSiteId) return
     setIsSimulatingEmergency(true)
@@ -86,9 +84,9 @@ export default function Dashboard() {
     try {
       const res = await triggerCheck(selectedSiteId, true)
       if (res.alerts_dispatched) {
-        setEmergencyStatus(`✅ CALL-E dispatched! Snapshot ID: ${res.snapshot_id}. Check your phone and the Live Action Feed below.`)
+        setEmergencyStatus(`✅ Emergency voice dispatch completed (Snapshot #${res.snapshot_id?.slice(0, 8)}). Stream updated below.`)
       } else {
-        setEmergencyStatus(`⚠️ Check triggered (risk: ${res.risk_level}). No alerts dispatched — ensure workers are enrolled with consent.`)
+        setEmergencyStatus(`⚠️ Check completed (Risk: ${res.risk_level}). Confirm workers are assigned with valid consent.`)
       }
     } catch (err: any) {
       setEmergencyStatus(`❌ Error: ${err.message}`)
@@ -98,125 +96,128 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Top Executive Autonomous HUD */}
-      <div className="bg-[#242D30] text-[#DCD7C9] border border-[#3F4E4F] rounded-2xl p-3.5 flex flex-wrap items-center justify-between gap-4 shadow-xl">
-        <div className="flex flex-wrap items-center gap-4">
-          {/* Autonomous Status Badge */}
-          <div className="flex items-center gap-2 bg-[#1A2224] px-3 py-1.5 rounded-xl border border-emerald-500/40">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-bold text-white font-mono uppercase tracking-wide">
-              Autonomous AI Guardian Active
-            </span>
-          </div>
-
-          <div className="h-6 w-px bg-[#3F4E4F] hidden md:block" />
-
-          {/* Active Worksite Selector */}
-          <div className="flex items-center gap-2 font-mono text-xs">
-            <span className="text-[#DCD7C9]/60 text-[11px]">Site:</span>
+    <div className="space-y-5">
+      {/* Top Executive Control Bar */}
+      <div className="card-surface p-3.5 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Site Selector Dropdown */}
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
             <select
               value={selectedSiteId}
               onChange={(e) => setSelectedSiteId(e.target.value)}
-              className="bg-[#1A2224] border border-[#A27B5C]/50 text-white rounded-xl px-3 py-1.5 text-xs font-mono font-bold focus:outline-none focus:border-[#A27B5C] cursor-pointer"
+              className="bg-[#141B20] border border-slate-800 text-slate-200 rounded-xl px-3 py-1.5 text-xs font-medium focus:outline-none focus:border-slate-700 cursor-pointer"
             >
               {sites.map((s) => (
-                <option key={s.id} value={s.id}>📍 {s.name}</option>
+                <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
           </div>
 
-          <div className="h-6 w-px bg-[#3F4E4F] hidden md:block" />
+          <div className="h-5 w-px bg-slate-800 hidden md:block" />
 
-          {/* Live Temperature Readout — real data only */}
+          {/* Live Heat Metric */}
           {currentTempF !== null ? (
-            <div className="flex items-center gap-2 font-mono">
-              <span className="text-[10px] text-[#DCD7C9]/50 uppercase">Live Temp:</span>
-              <span className={`text-sm font-bold ${riskLevel === 'extreme' ? 'text-red-400' : riskLevel === 'elevated' ? 'text-yellow-400' : 'text-emerald-400'}`}>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-400">Baseline Heat:</span>
+              <span className={`text-xs font-semibold tabular-nums ${
+                riskLevel === 'extreme' ? 'text-rose-400' : riskLevel === 'elevated' ? 'text-amber-400' : 'text-emerald-400'
+              }`}>
                 {currentTempF}°F
               </span>
-              <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
-                riskLevel === 'extreme' ? 'bg-red-900/50 text-red-300' :
-                riskLevel === 'elevated' ? 'bg-yellow-900/50 text-yellow-300' :
-                'bg-emerald-900/50 text-emerald-300'
-              }`}>{riskLevel}</span>
+              <span className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full border ${
+                riskLevel === 'extreme' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
+                riskLevel === 'elevated' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+              }`}>
+                {riskLevel}
+              </span>
             </div>
           ) : (
-            <div className="flex items-center gap-2 font-mono text-xs text-[#DCD7C9]/40">
-              <span className="w-2 h-2 rounded-full bg-[#A27B5C]/40 animate-pulse" />
-              Syncing FortyGuard...
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-600 animate-pulse" />
+              Polling FortyGuard API...
             </div>
           )}
         </div>
 
-        {/* Action Controls & Emergency Injector */}
+        {/* Action Controls */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowTelemetryModal(true)}
-            className="px-3 py-1.5 rounded-xl bg-[#1A2224] hover:bg-[#3F4E4F] text-white text-xs font-mono font-bold transition-all border border-[#3F4E4F] flex items-center gap-1.5"
-            title="Inspect verified FortyGuard API key credits & raw response"
+            className="btn-ghost"
+            title="Inspect FortyGuard API Usage & Telemetry"
           >
-            <span>🛰️</span>
-            <span>FortyGuard Proof</span>
+            <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span>Telemetry Proof</span>
           </button>
 
           <button
             onClick={() => setShowOshaReportModal(true)}
-            className="px-3 py-1.5 rounded-xl bg-[#1A2224] hover:bg-[#3F4E4F] text-white text-xs font-mono font-bold transition-all border border-emerald-500/40 flex items-center gap-1.5"
-            title="Generate Official OSHA Heat Safety Compliance Audit Certificate"
+            className="btn-ghost"
+            title="Generate OSHA Compliance Certificate"
           >
-            <span>📑</span>
+            <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
             <span>OSHA Audit</span>
           </button>
 
           <button
             onClick={() => setShowDirectCallModal(true)}
-            className="px-3 py-1.5 rounded-xl bg-[#1A2224] hover:bg-[#3F4E4F] text-white text-xs font-mono font-bold transition-all border border-[#A27B5C]/40 flex items-center gap-1.5"
+            className="btn-ghost"
           >
-            <span>📱</span>
-            <span>Direct Call (CALL-E)</span>
+            <svg className="w-3.5 h-3.5 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+            </svg>
+            <span>Direct Call</span>
           </button>
 
           <button
             onClick={handleEmergencySpikeToggle}
             disabled={isSimulatingEmergency || !selectedSiteId}
-            className="px-3.5 py-1.5 rounded-xl bg-red-800 hover:bg-red-700 disabled:opacity-60 text-white text-xs font-mono font-bold transition-all shadow-md flex items-center gap-1.5"
-            title="Simulate extreme heat emergency and dispatch real CALL-E phone calls"
+            className="btn-danger"
+            title="Simulate heat spike and dispatch live CALL-E phone calls"
           >
-            <span>⚡</span>
-            <span>{isSimulatingEmergency ? 'AI Auto-Calling...' : 'Test Emergency Dispatch'}</span>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <span>{isSimulatingEmergency ? 'Calling Crew...' : 'Trigger Voice Alert'}</span>
           </button>
         </div>
       </div>
 
-      {/* Emergency Dispatch Status Banner — shows real backend response */}
+      {/* Emergency Status Banner */}
       {emergencyStatus && (
-        <div className={`rounded-xl px-4 py-3 text-sm font-mono border flex items-center justify-between ${
+        <div className={`rounded-xl px-4 py-3 text-xs border flex items-center justify-between ${
           emergencyStatus.startsWith('✅')
-            ? 'bg-emerald-950/50 border-emerald-600/40 text-emerald-300'
+            ? 'bg-emerald-950/40 border-emerald-500/30 text-emerald-300'
             : emergencyStatus.startsWith('❌')
-            ? 'bg-red-950/50 border-red-600/40 text-red-300'
-            : 'bg-yellow-950/50 border-yellow-600/40 text-yellow-300'
+            ? 'bg-rose-950/40 border-rose-500/30 text-rose-300'
+            : 'bg-amber-950/40 border-amber-500/30 text-amber-300'
         }`}>
           <span>{emergencyStatus}</span>
-          <button onClick={() => setEmergencyStatus(null)} className="ml-4 opacity-60 hover:opacity-100 font-bold text-lg leading-none">✕</button>
+          <button onClick={() => setEmergencyStatus(null)} className="ml-4 text-slate-400 hover:text-white font-bold">✕</button>
         </div>
       )}
 
-      {/* Main 3-Column Autonomous Command Center */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column (4 cols): Thermal Intelligence & Protected Workforce */}
+      {/* Main 3-Column Command Center */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Left Column (4 cols): Telemetry & Protected Crew */}
         <div className="lg:col-span-4 flex flex-col space-y-4">
-          {/* FortyGuard Microclimate Intelligence Card */}
           <MicroclimateTelemetryCard 
             data={microclimate} 
             loading={microLoading} 
             onBroadcastClick={handleEmergencySpikeToggle}
           />
 
-          {/* Browser Audio Voice Dispatch Preview */}
           <AudioVoicePlayer
-            workerName={workers[0]?.name || 'Site Lead'}
+            workerName={workers[0]?.name || 'Site Supervisor'}
             siteName={selectedSite?.name || 'Heavy Industrial Work Site'}
             surfaceTempF={microclimate?.surface_temp_f ?? 128.9}
             refugeName={microclimate?.cooling_refuge || 'Zone D Shaded Canopy'}
@@ -225,58 +226,62 @@ export default function Dashboard() {
             onDirectCallClick={() => setShowDirectCallModal(true)}
           />
 
-          {/* Active Workforce Roster */}
-          <div className="card-warm p-4 space-y-3 font-mono">
-            <div className="flex items-center justify-between border-b border-[#3F4E4F]/30 pb-2">
+          {/* Active Crew Roster */}
+          <div className="card-surface p-4 space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
               <div>
-                <h3 className="text-xs font-bold text-white uppercase">Protected Field Workforce</h3>
-                <span className="text-[10px] text-[#A27B5C] font-semibold">Autonomous Emergency Coverage</span>
+                <h3 className="text-xs font-semibold text-slate-200">
+                  Assigned Crew
+                </h3>
+                <p className="text-[10px] text-slate-400">
+                  Automated Phone & SMS Roster
+                </p>
               </div>
-              <span className="text-xs font-bold px-2 py-0.5 rounded bg-[#1A2224] text-emerald-400 border border-emerald-500/30">
-                {workers.length} On Duty
+              <span className="badge-emerald text-[10px]">
+                {workers.length} Enrolled
               </span>
             </div>
 
-            <div className="space-y-2 overflow-y-auto max-h-[240px] pr-1">
-              {loading && <p className="text-xs text-[#DCD7C9]/50 font-mono">Syncing personnel...</p>}
+            <div className="space-y-2 overflow-y-auto max-h-[220px] pr-1">
+              {loading && <p className="text-xs text-slate-500">Syncing personnel roster...</p>}
               {workers.map((w) => (
                 <WorkerCard key={w.id} worker={w} />
               ))}
               {!loading && workers.length === 0 && (
-                <p className="text-xs text-[#DCD7C9]/40 font-mono text-center py-4">
-                  No workers enrolled on this site.
+                <p className="text-xs text-slate-500 text-center py-4">
+                  No workers assigned to this site.
                 </p>
               )}
             </div>
           </div>
         </div>
 
-        {/* Center Column (5 cols): Live Geospatial Thermal Radar */}
+        {/* Center Column (5 cols): Geospatial Thermal Radar */}
         <div className="lg:col-span-5 flex flex-col space-y-4">
-          <div className="card-warm p-2 shadow-lg flex-1 min-h-[500px] flex flex-col">
+          <div className="card-surface p-2 shadow-lg flex-1 min-h-[500px] flex flex-col">
             <HeatMap site={selectedSite} riskLevel={riskLevel} snapshot={snapshot} microclimate={microclimate} />
           </div>
         </div>
 
-        {/* Right Column (3 cols): Autonomous AI Decision Stream */}
+        {/* Right Column (3 cols): Autonomous Dispatch Stream */}
         <div className="lg:col-span-3 flex flex-col space-y-4">
-          <div className="card-warm p-4 flex-1">
+          <div className="card-surface p-4 flex-1">
             <AutonomousGuardianFeed
               snapshot={snapshot}
               alerts={alerts}
-              siteName={selectedSite?.name || 'California Worksite'}
+              siteName={selectedSite?.name || 'Industrial Worksite'}
               onTrackCall={(callId) => setActiveCalleCallId(callId)}
             />
           </div>
         </div>
       </div>
 
-      {/* Hourly Forecast Chart */}
+      {/* Hourly Diurnal Forecast Chart */}
       {forecastData.length > 0 && (
         <HourlyThermalForecastChart data={forecastData} />
       )}
 
-      {/* OSHA & Legal Compliance Report Modal */}
+      {/* Modals */}
       {showOshaReportModal && (
         <OshaComplianceReportModal
           site={selectedSite}
@@ -287,7 +292,6 @@ export default function Dashboard() {
         />
       )}
 
-      {/* CALL-E Live Call Tracker Modal */}
       {activeCalleCallId && (
         <CalleLiveModal
           callId={activeCalleCallId}
@@ -295,14 +299,12 @@ export default function Dashboard() {
         />
       )}
 
-      {/* Direct Mobile Phone Dialing Modal */}
       {showDirectCallModal && (
         <DirectCallModal
           onClose={() => setShowDirectCallModal(false)}
         />
       )}
 
-      {/* Register Custom Work Site Modal */}
       {showRegisterSiteModal && (
         <RegisterSiteModal
           onSiteCreated={(newSite) => {
@@ -313,7 +315,6 @@ export default function Dashboard() {
         />
       )}
 
-      {/* FortyGuard Raw Telemetry Modal */}
       {showTelemetryModal && (
         <FortyGuardTelemetryModal
           usageData={usageData}

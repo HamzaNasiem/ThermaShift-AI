@@ -8,10 +8,11 @@
   }
 
   body {
-    background-color: #1A2224;
-    color: #DCD7C9;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #0B0F12;
+    color: #E2E8F0;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   ::-webkit-scrollbar {
@@ -20,39 +21,70 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #1A2224;
+    background: #0B0F12;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #3F4E4F;
-    border-radius: 3px;
+    background: #1E293B;
+    border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #A27B5C;
+    background: #334155;
   }
 }
 
 @layer components {
-  .card-warm {
-    @apply bg-[#242D30] text-[#DCD7C9] border border-[#3F4E4F]/60 rounded-2xl shadow-xl transition-all duration-200;
+  /* Modern Clean Enterprise Cards */
+  .card-surface {
+    @apply bg-[#11171B] text-slate-200 border border-slate-800/80 rounded-2xl shadow-xl transition-all duration-200;
   }
 
-  .card-charcoal {
-    @apply bg-[#1E2628] text-[#DCD7C9] border border-[#3F4E4F] rounded-2xl shadow-xl;
+  .card-surface-hover {
+    @apply card-surface hover:border-slate-700/90 hover:bg-[#151D22];
   }
 
-  .btn-bronze {
-    @apply bg-[#A27B5C] hover:bg-[#b88c68] text-white font-bold px-4 py-2 rounded-xl transition-all duration-200 shadow-md active:scale-95 text-xs font-mono tracking-wider uppercase;
+  .card-surface-glass {
+    @apply bg-[#11171B]/90 backdrop-blur-md text-slate-200 border border-slate-800/80 rounded-2xl shadow-2xl;
   }
 
-  .btn-charcoal {
-    @apply bg-[#2C3639] hover:bg-[#3F4E4F] text-[#DCD7C9] font-bold px-4 py-2 rounded-xl transition-all duration-200 shadow-md active:scale-95 text-xs font-mono tracking-wider uppercase;
+  /* Refined Buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition-all duration-150 shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition-all duration-150 shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium px-3.5 py-2 rounded-xl transition-all duration-150 border border-slate-700/60 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 bg-transparent hover:bg-slate-800/60 text-slate-300 hover:text-white text-xs font-medium px-3 py-1.5 rounded-xl transition-all duration-150 border border-slate-800 active:scale-[0.98];
+  }
+
+  /* Subtle Status Badges */
+  .badge-emerald {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20;
+  }
+
+  .badge-amber {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20;
+  }
+
+  .badge-rose {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20;
+  }
+
+  .badge-slate {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800/60 text-slate-400 border border-slate-700/50;
   }
 }
 
 .leaflet-container {
-  background: #1A2224 !important;
+  background: #0B0F12 !important;
   border-radius: 16px;
   width: 100%;
   height: 100%;

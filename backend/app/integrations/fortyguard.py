@@ -14,6 +14,31 @@ class FortyGuardError(Exception):
     pass
 
 
+def ensure_valid_polygon(polygon_geojson: dict) -> dict:
+    """Ensure polygon_geojson is a closed ring with at least 4 coordinates."""
+    if not isinstance(polygon_geojson, dict):
+        return polygon_geojson
+    coords = polygon_geojson.get("coordinates", [])
+    if coords and len(coords) > 0 and len(coords[0]) > 0:
+        ring = list(coords[0])
+        if len(ring) < 3:
+            lat, lng = ring[0][1], ring[0][0]
+            d = 0.005
+            ring = [
+                [lng - d, lat - d],
+                [lng + d, lat - d],
+                [lng + d, lat + d],
+                [lng - d, lat + d],
+                [lng - d, lat - d]
+            ]
+        elif len(ring) == 3:
+            ring.append(ring[0])
+        elif ring[0] != ring[-1]:
+            ring.append(ring[0])
+        return {"type": "Polygon", "coordinates": [ring]}
+    return polygon_geojson
+
+
 async def submit_heat_query(polygon_geojson: dict, granularity: int = 100, target_date: str | None = None, target_time: str | None = None) -> str:
     """Submit an async heatmap query to FortyGuard. Returns activity_id."""
     if not settings.fortyguard_api_key:
@@ -21,12 +46,15 @@ async def submit_heat_query(polygon_geojson: dict, granularity: int = 100, targe
             "FORTYGUARD_API_KEY is not set in environment."
         )
 
+    # Validate & sanitize polygon ring
+    valid_polygon = ensure_valid_polygon(polygon_geojson)
+
     # FortyGuard baseline temperature model dataset uses peak summer date
     start_date = target_date or "2024-07-15"
     start_time = target_time or "14:00"
 
     payload = {
-        "polygon_aoi": polygon_geojson,
+        "polygon_aoi": valid_polygon,
         "date_time": {
             "start_date": start_date,
             "start_time": start_time,
