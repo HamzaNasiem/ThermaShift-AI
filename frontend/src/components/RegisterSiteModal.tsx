@@ -8,12 +8,12 @@ interface RegisterSiteModalProps {
 }
 
 const PRESET_LOCATIONS = [
-  { name: 'Abu Dhabi ICAD Industrial City, UAE', lat: 24.3312, lng: 54.4921 },
-  { name: 'Dubai Al Quoz Heavy Logistics Yard, UAE', lat: 25.1324, lng: 55.2341 },
   { name: 'Los Angeles Downtown Thermal Corridor, CA', lat: 34.0407, lng: -118.2468 },
-  { name: 'Phoenix Sky Harbor Freight Yard, AZ', lat: 33.4352, lng: -112.0101 },
-  { name: 'Fresno Solar & Ag Field, Central Valley, CA', lat: 36.7468, lng: -119.7726 },
-  { name: 'Port of Los Angeles Terminal, CA', lat: 33.7432, lng: -118.2673 },
+  { name: 'Port of Los Angeles & Long Beach Terminal, CA', lat: 33.7432, lng: -118.2673 },
+  { name: 'Fresno Central Valley Solar & Ag Zone, CA', lat: 36.7468, lng: -119.7726 },
+  { name: 'Inland Empire Ontario Logistics Hub, CA', lat: 34.0633, lng: -117.6509 },
+  { name: 'Bakersfield Energy & Agriculture Corridor, CA', lat: 35.3733, lng: -119.0187 },
+  { name: 'Silicon Valley San Jose Construction Yard, CA', lat: 37.3382, lng: -121.8863 },
 ]
 
 export default function RegisterSiteModal({ onSiteCreated, onClose }: RegisterSiteModalProps) {
