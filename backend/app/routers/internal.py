@@ -131,14 +131,26 @@ async def fortyguard_env_params(payload: EnvParamsRequest):
 @router.get("/calle/call/{call_id}")
 async def calle_call_status(call_id: str):
     """Fetch live call execution status, task result, and summary from CALL-E."""
+    import httpx
     from app.integrations import calle
+    
+    clean_id = (call_id or "").strip()
+    if not clean_id:
+        raise HTTPException(status_code=400, detail="call_id cannot be empty")
+        
     try:
-        status_data = await calle.get_call_status(call_id)
+        status_data = await calle.get_call_status(clean_id)
         try:
-            events_data = await calle.get_call_events(call_id)
+            events_data = await calle.get_call_events(clean_id)
         except Exception:
             events_data = {}
         return {"call": status_data, "events": events_data}
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code == 404:
+            raise HTTPException(status_code=404, detail=f"CALL-E call '{clean_id}' not found")
+        raise HTTPException(status_code=502, detail=f"CALL-E API error ({exc.response.status_code}): {exc.response.text}")
+    except ValueError as val_err:
+        raise HTTPException(status_code=400, detail=str(val_err))
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"CALL-E API error: {exc}")
 
@@ -153,6 +165,7 @@ async def calle_direct_call(payload: DirectCallRequest):
     """Dispatch a real CALL-E outbound call directly to any phone number.
     No DB worker or site record required — used by DirectCallModal for live demos.
     """
+    import httpx
     from app.integrations.calle import trigger_direct_call
     try:
         call_id = await trigger_direct_call(
@@ -166,5 +179,9 @@ async def calle_direct_call(payload: DirectCallRequest):
             "worker_name": payload.worker_name,
             "message": "CALL-E voice call dispatched. Your phone will ring shortly.",
         }
+    except ValueError as val_err:
+        raise HTTPException(status_code=400, detail=str(val_err))
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(status_code=502, detail=f"CALL-E API error ({exc.response.status_code}): {exc.response.text}")
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"CALL-E dispatch error: {exc}")

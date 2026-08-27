@@ -28,7 +28,7 @@ class MicrocellDetail(BaseModel):
     temp_f: float
     temp_c: float
     surface_temp_f: float
-    surface_type: str  # 'asphalt', 'concrete', 'shaded_canopy', 'green_buffer'
+    surface_type: str  # 'asphalt', 'concrete', 'shaded_canopy', 'green_buffer', 'soil'
     solar_exposure: str  # 'direct_sun', 'partial_shade', 'full_canopy_shade'
     solar_radiation_w_m2: float
     wbgt_f: float = 0.0
@@ -57,6 +57,9 @@ class MicroclimateAnalysisResponse(BaseModel):
     vector_origin_lng: float
     vector_target_lat: float
     vector_target_lng: float
+    compass_bearing_deg: float = 0.0
+    compass_direction: str = ""
+    wbgt_reduction_pct: float = 42.0
     fortyguard_max_temp_c: float | None = None
     fortyguard_mean_temp_c: float | None = None
     fortyguard_n_cells: int = 0
@@ -85,5 +88,3 @@ class HourlyForecastResponse(BaseModel):
     peak_hour: str
     peak_surface_temp_f: float
     points: list[HourlyForecastPoint]
-
-

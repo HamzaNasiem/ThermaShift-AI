@@ -15,4 +15,7 @@ async def run():
         snap = res.scalar_one_or_none()
         print(json.dumps(snap.raw_response) if snap else 'No data')
 
-asyncio.run(run())
+if __name__ == "__main__":
+    import app.models  # load all models
+    asyncio.run(run())
+

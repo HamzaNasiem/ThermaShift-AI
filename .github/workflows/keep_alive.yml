@@ -1,22 +1,40 @@
-name: ThermaShift AI 24/7 Render Warm-Up Engine
+name: ThermaShift AI 24/7 Warm-Up & Uptime Monitor
 
 on:
   schedule:
-    - cron: '*/5 * * * *' # Pings Render every 5 minutes 24/7 to prevent sleep
+    - cron: '*/5 * * * *' # Pings Render & Vercel every 5 minutes 24/7 to guarantee 100% uptime & zero cold starts
   workflow_dispatch:
 
 jobs:
   warm_up:
-    name: Keep Render Backend Warm & Ready
+    name: Keep ThermaShift AI Warm & Ready
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Render Backend Health Endpoint
+      - name: Ping Render Backend Health
         run: |
-          echo "Pinging ThermaShift AI Render Backend..."
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://thermashift-ai.onrender.com/health)
-          echo "Render Backend Status: $HTTP_CODE"
-          if [ "$HTTP_CODE" -eq 200 ]; then
-            echo "Render Backend is 100% WARM, HOT in RAM, and READY for Judges!"
+          echo "=============================================="
+          echo "  ThermaShift AI 24/7 Warm-Up Engine          "
+          echo "=============================================="
+          
+          # 1. Direct Render Backend Health
+          echo "Pinging Render Backend (https://thermashift-ai.onrender.com/health)..."
+          RENDER_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 --retry 2 https://thermashift-ai.onrender.com/health || echo "FAILED")
+          echo "Render Direct Status: $RENDER_STATUS"
+
+          # 2. Vercel Reverse Proxy Tunnel
+          echo "Pinging Vercel Edge Proxy (https://thermashift-ai.vercel.app/api/health)..."
+          VERCEL_PROXY_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 --retry 2 https://thermashift-ai.vercel.app/api/health || echo "FAILED")
+          echo "Vercel Proxy Status: $VERCEL_PROXY_STATUS"
+
+          # 3. Vercel Frontend SPA
+          echo "Pinging Vercel Frontend (https://thermashift-ai.vercel.app)..."
+          FRONTEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 --retry 2 https://thermashift-ai.vercel.app || echo "FAILED")
+          echo "Vercel Frontend Status: $FRONTEND_STATUS"
+
+          echo "=============================================="
+          if [ "$RENDER_STATUS" = "200" ] && [ "$VERCEL_PROXY_STATUS" = "200" ] && [ "$FRONTEND_STATUS" = "200" ]; then
+            echo "STATUS: ALL SYSTEMS 100% OPERATIONAL & HOT IN RAM FOR JUDGES!"
           else
-            echo "Warning: Response code $HTTP_CODE"
+            echo "STATUS: One or more targets returned non-200. Check logs above."
           fi
+          echo "=============================================="

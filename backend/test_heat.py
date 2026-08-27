@@ -1,26 +1,32 @@
-import httpx
-import asyncio
+"""Integration test for heat microclimate and hourly forecast endpoints."""
+
+import pytest
+from httpx import AsyncClient, ASGITransport
+from app.main import app
+
+pytestmark = pytest.mark.asyncio
+
 
 async def test_heat_endpoints():
-    site_id = "0f42262d-d50d-4aac-93d5-798c62b6da96"
-    base_url = "http://localhost:8000"
-    
-    async with httpx.AsyncClient() as client:
-        print(f"Testing GET /heat/microclimate?site_id={site_id}")
-        r1 = await client.get(f"{base_url}/heat/microclimate", params={"site_id": site_id})
-        print(f"Status: {r1.status_code}")
-        if r1.status_code == 200:
-            print("Microclimate endpoint success!")
-        else:
-            print(f"Response: {r1.text}")
-        
-        print(f"\nTesting GET /heat/hourly-forecast?site_id={site_id}")
-        r2 = await client.get(f"{base_url}/heat/hourly-forecast", params={"site_id": site_id})
-        print(f"Status: {r2.status_code}")
-        if r2.status_code == 200:
-            print("Hourly forecast endpoint success!")
-        else:
-            print(f"Response: {r2.text}")
+    """Verify microclimate and hourly forecast endpoints for seeded sites."""
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        sites_res = await client.get("/sites")
+        assert sites_res.status_code == 200
+        sites = sites_res.json()
+        assert len(sites) >= 1
+        site_id = sites[0]["id"]
 
-if __name__ == "__main__":
-    asyncio.run(test_heat_endpoints())
+        r1 = await client.get(f"/heat/microclimate?site_id={site_id}")
+        assert r1.status_code == 200
+        micro_data = r1.json()
+        assert "ambient_temp_f" in micro_data
+        assert "surface_temp_f" in micro_data
+        assert "microcells" in micro_data
+        assert len(micro_data["microcells"]) == 36
+
+        r2 = await client.get(f"/heat/hourly-forecast?site_id={site_id}")
+        assert r2.status_code == 200
+        fc_data = r2.json()
+        assert "points" in fc_data
+        assert len(fc_data["points"]) == 10
+

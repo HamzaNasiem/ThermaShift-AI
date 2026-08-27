@@ -40,33 +40,33 @@ export default function AnalyticsPanel({ snapshot }: AnalyticsPanelProps) {
   const minTempF = Math.round(((minTempC * 9) / 5 + 32) * 10) / 10
 
   return (
-    <div className="space-y-3.5">
+    <div className="space-y-3.5 font-sans">
       <div className="flex items-center justify-between">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-[#2C3639] font-mono">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-[#141414]">
           FortyGuard Thermal Distribution
         </span>
-        <span className="text-[10px] px-2.5 py-0.5 rounded-md bg-[#A27B5C]/15 text-[#A27B5C] border border-[#A27B5C]/30 font-mono font-bold">
+        <span className="badge-slate text-[10px] font-bold">
           70 Cells (100m)
         </span>
       </div>
 
       {/* SVG Gaussian Curve */}
-      <div className="bg-[#2C3639] border border-[#3F4E4F] rounded-xl p-3 text-[#DCD7C9] shadow-warm">
-        <div className="flex justify-between text-[10px] text-[#A27B5C] mb-1.5 font-mono font-semibold">
+      <div className="bg-[#f9fafb] border border-slate-200 rounded-xl p-3 text-[#141414] shadow-sm">
+        <div className="flex justify-between text-[10px] text-slate-500 mb-1.5 font-semibold">
           <span>Gaussian Probability Density</span>
-          <span>Peak: {meanTempF}°F</span>
+          <span className="text-emerald-700 font-bold">Peak: {meanTempF}°F</span>
         </div>
         <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-20 overflow-visible">
           <defs>
             <linearGradient id="curveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#2E7D32" />
-              <stop offset="50%" stopColor="#A27B5C" />
-              <stop offset="100%" stopColor="#C23B22" />
+              <stop offset="0%" stopColor="#10B981" />
+              <stop offset="50%" stopColor="#F59E0B" />
+              <stop offset="100%" stopColor="#EF4444" />
             </linearGradient>
           </defs>
 
           {/* Baseline */}
-          <line x1="10" y1={svgHeight - 15} x2={svgWidth - 10} y2={svgHeight - 15} stroke="#3F4E4F" strokeWidth="1" />
+          <line x1="10" y1={svgHeight - 15} x2={svgWidth - 10} y2={svgHeight - 15} stroke="#E5E7EB" strokeWidth="1" />
 
           {/* Curve */}
           {points.length > 1 ? (
@@ -87,7 +87,7 @@ export default function AnalyticsPanel({ snapshot }: AnalyticsPanelProps) {
             />
           )}
         </svg>
-        <div className="flex justify-between text-[10px] text-[#DCD7C9]/80 mt-1 font-mono border-t border-[#3F4E4F] pt-1.5">
+        <div className="flex justify-between text-[10px] text-slate-600 mt-1 border-t border-slate-200 pt-1.5 font-medium">
           <span>Min: {minTempF}°F</span>
           <span>Mean: {meanTempF}°F</span>
           <span>Max: {maxTempF}°F</span>
@@ -95,14 +95,14 @@ export default function AnalyticsPanel({ snapshot }: AnalyticsPanelProps) {
       </div>
 
       {/* Statistical Summary Grid */}
-      <div className="grid grid-cols-2 gap-2.5 text-xs font-mono">
-        <div className="p-2.5 rounded-xl bg-[#F5F2EB] border border-[#3F4E4F]/20 shadow-sm">
-          <span className="text-[10px] text-[#3F4E4F] block font-medium">Variance / Std Dev</span>
-          <span className="font-bold text-[#2C3639]">±{stdDev.toFixed(3)}°C</span>
+      <div className="grid grid-cols-2 gap-2.5 text-xs">
+        <div className="p-2.5 rounded-xl bg-[#f9fafb] border border-slate-200 shadow-sm">
+          <span className="text-[10px] text-slate-500 block font-medium">Variance / Std Dev</span>
+          <span className="font-bold text-[#141414]">±{stdDev.toFixed(3)}°C</span>
         </div>
-        <div className="p-2.5 rounded-xl bg-[#F5F2EB] border border-[#3F4E4F]/20 shadow-sm">
-          <span className="text-[10px] text-[#3F4E4F] block font-medium">Analysis Mode</span>
-          <span className="font-bold text-[#A27B5C] capitalize">{snapshot?.analysis_layer ?? 'Persistence'}</span>
+        <div className="p-2.5 rounded-xl bg-[#f9fafb] border border-slate-200 shadow-sm">
+          <span className="text-[10px] text-slate-500 block font-medium">Analysis Mode</span>
+          <span className="font-bold text-emerald-700 capitalize">{snapshot?.analysis_layer ?? 'Persistence'}</span>
         </div>
       </div>
     </div>

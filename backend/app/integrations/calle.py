@@ -11,14 +11,41 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 
+def sanitize_url(url: str) -> str:
+    """Sanitize URL by stripping whitespace, carriage returns, newlines, and trailing slashes."""
+    if not url:
+        return ""
+    return re.sub(r"[\r\n\s]+", "", str(url)).rstrip("/")
+
+
+def sanitize_api_key(key: str) -> str:
+    """Sanitize API key by stripping whitespace, carriage returns, and newlines."""
+    if not key:
+        return ""
+    return re.sub(r"[\r\n\s]+", "", str(key))
+
+
 def format_e164(phone: str) -> str:
-    """Format phone number to E.164 standard (+[country code][digits])."""
+    """Format and validate phone number to standard E.164 (+[country code][digits]).
+    
+    Strips whitespace, line breaks, hyphens, parentheses, and other non-digit noise.
+    Validates digit count to be between 7 and 15 digits according to ITU-T E.164.
+    """
     if not phone:
         raise ValueError("Phone number cannot be empty")
-    cleaned = re.sub(r"[^\d+]", "", phone.strip())
-    if not cleaned.startswith("+"):
-        cleaned = f"+{cleaned}"
-    return cleaned
+    cleaned_input = str(phone).strip().replace("\r", "").replace("\n", "")
+    if not cleaned_input:
+        raise ValueError("Phone number cannot be empty")
+    
+    digits_only = re.sub(r"\D", "", cleaned_input)
+    if not digits_only:
+        raise ValueError(f"Phone number '{phone}' contains no valid digits")
+    
+    if len(digits_only) < 7 or len(digits_only) > 15:
+        raise ValueError(
+            f"Phone number '{phone}' must contain between 7 and 15 digits (E.164 standard), got {len(digits_only)}"
+        )
+    return f"+{digits_only}"
 
 
 def build_task_prompt(to_number: str, worker_name: str, site_name: str, temp_f_str: str, language: str = "en") -> str:
@@ -38,8 +65,8 @@ async def trigger_outbound_call(worker, site, snapshot) -> str:
     and structured verification schema.
     Returns the call_id (e.g. 'call_91-GpTzKXNBvpPox8NN4gw').
     """
-    api_key = settings.calle_api_key.strip()
-    base_url = str(settings.calle_base_url).strip().rstrip("/")
+    api_key = sanitize_api_key(settings.calle_api_key)
+    base_url = sanitize_url(settings.calle_base_url)
     if not api_key:
         raise ValueError("CALLE_API_KEY is not configured in .env")
 
@@ -110,8 +137,8 @@ async def trigger_outbound_call(worker, site, snapshot) -> str:
 
 async def get_call_status(call_id: str) -> dict:
     """Fetch live call execution status, structured result, and summary from CALL-E."""
-    api_key = settings.calle_api_key.strip()
-    base_url = str(settings.calle_base_url).strip().rstrip("/")
+    api_key = sanitize_api_key(settings.calle_api_key)
+    base_url = sanitize_url(settings.calle_base_url)
     if not api_key:
         raise ValueError("CALLE_API_KEY is not configured")
 
@@ -120,15 +147,15 @@ async def get_call_status(call_id: str) -> dict:
     }
 
     async with httpx.AsyncClient(timeout=15.0) as client:
-        resp = await client.get(f"{base_url}/calls/{call_id}", headers=headers)
+        resp = await client.get(f"{base_url}/calls/{call_id.strip()}", headers=headers)
         resp.raise_for_status()
         return resp.json()
 
 
 async def get_call_events(call_id: str) -> dict:
     """Fetch live event log and transcript snippets from CALL-E."""
-    api_key = settings.calle_api_key.strip()
-    base_url = str(settings.calle_base_url).strip().rstrip("/")
+    api_key = sanitize_api_key(settings.calle_api_key)
+    base_url = sanitize_url(settings.calle_base_url)
     if not api_key:
         raise ValueError("CALLE_API_KEY is not configured")
 
@@ -137,7 +164,7 @@ async def get_call_events(call_id: str) -> dict:
     }
 
     async with httpx.AsyncClient(timeout=15.0) as client:
-        resp = await client.get(f"{base_url}/calls/{call_id}/events", headers=headers)
+        resp = await client.get(f"{base_url}/calls/{call_id.strip()}/events", headers=headers)
         resp.raise_for_status()
         return resp.json()
 
@@ -147,8 +174,8 @@ async def trigger_direct_call(phone_number: str, worker_name: str) -> str:
     No DB worker or site required — used for demo/testing via DirectCallModal.
     Returns the call_id.
     """
-    api_key = settings.calle_api_key.strip()
-    base_url = str(settings.calle_base_url).strip().rstrip("/")
+    api_key = sanitize_api_key(settings.calle_api_key)
+    base_url = sanitize_url(settings.calle_base_url)
     if not api_key:
         raise ValueError("CALLE_API_KEY is not configured in .env")
 

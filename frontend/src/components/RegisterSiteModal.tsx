@@ -46,7 +46,7 @@ export default function RegisterSiteModal({ onSiteCreated, onClose }: RegisterSi
     const dlng = (size / 2) / (111.0 * Math.cos((centerLat * Math.PI) / 180))
 
     const polygon_geojson = {
-      type: 'Polygon',
+      type: 'Polygon' as const,
       coordinates: [[
         [Math.round((centerLng - dlng) * 1e6) / 1e6, Math.round((centerLat - dlat) * 1e6) / 1e6],
         [Math.round((centerLng + dlng) * 1e6) / 1e6, Math.round((centerLat - dlat) * 1e6) / 1e6],
@@ -104,7 +104,7 @@ export default function RegisterSiteModal({ onSiteCreated, onClose }: RegisterSi
             <label className="block text-[10px] text-slate-500 font-semibold uppercase mb-1.5">
               Quick Global Worksite Presets
             </label>
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
               {PRESET_LOCATIONS.map((preset) => (
                 <button
                   key={preset.name}

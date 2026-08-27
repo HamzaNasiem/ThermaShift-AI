@@ -2,6 +2,8 @@
   "name": "thermashift-ai",
   "private": true,
   "scripts": {
-    "build": "cd frontend && npm install && npm run build"
+    "dev": "npm --prefix frontend run dev",
+    "build": "cd frontend && npm install && npm run build",
+    "typecheck": "npm --prefix frontend run typecheck"
   }
 }

@@ -5,12 +5,14 @@ interface DirectCallModalProps {
   initialWorkerName?: string
   initialPhoneNumber?: string
   onClose: () => void
+  onTrackCall?: (callId: string) => void
 }
 
 export default function DirectCallModal({
   initialWorkerName = '',
   initialPhoneNumber = '',
   onClose,
+  onTrackCall,
 }: DirectCallModalProps) {
   const [phoneNumber, setPhoneNumber] = useState(initialPhoneNumber)
   const [workerName, setWorkerName] = useState(initialWorkerName)
@@ -82,7 +84,7 @@ export default function DirectCallModal({
               onChange={(e) => setPhoneNumber(e.target.value)}
               className="w-full bg-[#f9fafb] border border-slate-200 text-[#141414] rounded-xl px-3.5 py-2 text-xs font-mono focus:outline-none focus:border-slate-400"
             />
-            <p className="text-[11px] text-slate-500 mt-1 font-medium">Include "+" and country code (e.g. +92 for PK, +1 for US)</p>
+            <p className="text-[11px] text-slate-500 mt-1 font-medium">Include "+" and country code (e.g. +92 for PK, +1 for US, 7-15 digits)</p>
           </div>
 
           {error && (
@@ -92,13 +94,23 @@ export default function DirectCallModal({
           )}
 
           {result && (
-            <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs space-y-1.5">
+            <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs space-y-2">
               <div className="font-bold flex items-center gap-1.5">
                 <span>✓</span>
                 <span>Call Initiated! Ringing your phone now...</span>
               </div>
               <div className="font-mono text-[11px] text-emerald-900/80">Call ID: {result.call_id}</div>
               <p className="text-[11px] text-emerald-900/70 font-medium">Answer the call to hear ThermaShift AI's bilingual voice dispatch.</p>
+              
+              {onTrackCall && result.call_id && (
+                <button
+                  type="button"
+                  onClick={() => onTrackCall(result.call_id)}
+                  className="w-full mt-2 btn-primary bg-emerald-700 hover:bg-emerald-600 text-white text-xs py-1.5"
+                >
+                  Inspect Live Call Stream & Transcripts →
+                </button>
+              )}
             </div>
           )}
         </div>

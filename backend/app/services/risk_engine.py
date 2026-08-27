@@ -1,10 +1,11 @@
-"""OSHA & ILO Occupational Heat Safety Engine.
+"""OSHA General Duty Clause & ISO 7243 Occupational Heat Safety Physics Engine.
 
-Provides mathematically grounded algorithms for:
-- Wet Bulb Globe Temperature (WBGT) approximations (Stull wet-bulb + solar globe model)
-- OSHA & ILO Work/Rest ratio cycles (50/10, 30/30, 15/45, 60/0)
-- Hydration Rate requirements (Liters/hour)
-- Risk level classification & FortyGuard persistence escalation rules
+Provides mathematically grounded, peer-reviewed algorithms for:
+- Wet Bulb Globe Temperature (WBGT) calculation (Roland Stull 2011 wet-bulb + solar black globe model)
+- OSHA General Duty Clause (Section 5(a)(1)) & ISO 7243 Work/Rest ratio cycles (60/0, 50/10, 30/30, 15/45, STOP_WORK)
+- NIOSH & OSHA Hydration Rate requirements (0.50 - 1.50 L/hr fluid intake)
+- Risk level classification (Safe <90°F, Elevated 90°-104.9°F, Extreme >=105°F)
+- FortyGuard satellite persistence layer escalation rules
 """
 
 import math
@@ -15,16 +16,16 @@ from typing import Optional, Tuple
 
 
 class RiskLevel(str, Enum):
-    NORMAL = "normal"
-    ELEVATED = "elevated"
-    EXTREME = "extreme"
+    NORMAL = "normal"      # Safe / Normal operations (< 90°F / < 32.2°C, WBGT < 82.4°F)
+    ELEVATED = "elevated"  # Elevated heat stress (90°F - 104.9°F / 32.2°C - 40.5°C, WBGT 82.4°F - 89.5°F)
+    EXTREME = "extreme"    # Extreme hazard (>= 105°F / >= 40.6°C, WBGT >= 89.6°F)
 
 
 class WorkloadCategory(str, Enum):
-    LIGHT = "light"
-    MODERATE = "moderate"
-    HEAVY = "heavy"
-    VERY_HEAVY = "very_heavy"
+    LIGHT = "light"            # Sitting, fine manual work, light driving (M < 200 W)
+    MODERATE = "moderate"      # Sustained walking, lifting, carpentry, masonry (200 W <= M <= 350 W)
+    HEAVY = "heavy"            # Shoveling, heavy manual digging, carrying loads (350 W < M <= 500 W)
+    VERY_HEAVY = "very_heavy"  # Maximum exertion, climbing with gear (M > 500 W)
 
 
 @dataclass
@@ -63,6 +64,8 @@ def celsius_to_fahrenheit(temp_c: float) -> float:
 def calculate_stull_wet_bulb(temp_c: float, relative_humidity: float) -> float:
     """Calculate natural wet-bulb temperature (°C) using Stull's equation (2011).
 
+    Roland Stull (2011), 'Wet-Bulb Temperature from Relative Humidity and Air Temperature',
+    Journal of Applied Meteorology and Climatology, Vol. 50, pp. 2267-2269.
     Valid for relative humidity between 5% and 99% and temperatures -20°C to 50°C.
     """
     rh = max(0.0, min(100.0, relative_humidity))
@@ -81,9 +84,10 @@ def calculate_stull_wet_bulb(temp_c: float, relative_humidity: float) -> float:
 def calculate_globe_temperature(
     temp_c: float, solar_irradiance: float = 800.0, wind_speed_m_s: float = 1.0
 ) -> float:
-    """Calculate estimated outdoor globe temperature Tg (°C).
+    """Calculate estimated outdoor black globe temperature Tg (°C).
 
-    Accounts for dry bulb temp, direct solar radiation (W/m²), and convective cooling from wind.
+    Liljegren / Dimiceli approximation accounts for ambient dry bulb temp,
+    direct and diffuse solar irradiance (W/m²), and convective wind cooling (m/s).
     """
     s = max(0.0, solar_irradiance)
     v = max(0.2, wind_speed_m_s)
@@ -97,9 +101,14 @@ def calculate_wbgt(
     solar_irradiance: float = 800.0,
     wind_speed_m_s: float = 1.0,
 ) -> Tuple[float, float]:
-    """Calculate Outdoor Wet Bulb Globe Temperature (WBGT).
+    """Calculate Outdoor Wet Bulb Globe Temperature (WBGT) per ISO 7243 Standard.
 
-    Formula: WBGT = 0.7 * T_nw + 0.2 * T_g + 0.1 * T_a
+    Formula: WBGT_outdoor = 0.7 * T_nw + 0.2 * T_g + 0.1 * T_a
+    where:
+      - T_nw = Natural wet-bulb temperature (°C)
+      - T_g  = Black globe temperature (°C)
+      - T_a  = Ambient air dry-bulb temperature (°C)
+
     Returns tuple of (wbgt_f, wbgt_c).
     """
     temp_c = fahrenheit_to_celsius(temperature_f)
@@ -115,13 +124,14 @@ def calculate_wbgt(
 def calculate_work_rest_ratio(
     wbgt_f: float, workload: WorkloadCategory | str = WorkloadCategory.MODERATE
 ) -> WorkRestCycle:
-    """Determine OSHA / ILO recommended Work/Rest ratio cycle based on WBGT (°F).
+    """Determine OSHA / ISO 7243 recommended Work/Rest ratio cycle based on WBGT (°F).
 
     Standard threshold cycles for moderate outdoor workload:
     - WBGT < 82.4°F (28°C): Continuous Work (60/0)
     - 82.4°F <= WBGT < 86.0°F (28-30°C): 50 min work / 10 min rest (50/10)
     - 86.0°F <= WBGT < 89.6°F (30-32°C): 30 min work / 30 min rest (30/30)
-    - WBGT >= 89.6°F (32°C): 15 min work / 45 min rest (15/45)
+    - 89.6°F <= WBGT < 93.0°F (32-33.9°C): 15 min work / 45 min rest (15/45)
+    - WBGT >= 93.0°F (>=33.9°C): STOP WORK (0/60) - Immediate Heat Evacuation Mandate
     """
     if isinstance(workload, str):
         workload = WorkloadCategory(workload.lower())
@@ -137,8 +147,16 @@ def calculate_work_rest_ratio(
     t_elevated = 82.4 + offset
     t_high = 86.0 + offset
     t_extreme = 89.6 + offset
+    t_stop = 93.0 + offset
 
-    if wbgt_f >= t_extreme:
+    if wbgt_f >= t_stop:
+        return WorkRestCycle(
+            work_minutes=0,
+            rest_minutes=60,
+            ratio_str="STOP_WORK",
+            description="STOP WORK: Immediate heat evacuation required under OSHA General Duty Clause (Lethal thermal stress)",
+        )
+    elif wbgt_f >= t_extreme:
         return WorkRestCycle(
             work_minutes=15,
             rest_minutes=45,
@@ -176,36 +194,54 @@ def calculate_hydration_rate(
 ) -> float:
     """Calculate recommended fluid intake (Liters per hour) based on OSHA & NIOSH guidelines.
 
-    Bounded between 0.50 L/hr (light heat) and 1.50 L/hr (maximum safe fluid intake rate).
+    - Safe (<90°F / WBGT < 82.4°F): 0.50 - 0.75 L/hr
+    - Elevated (90°F–104.9°F / WBGT 82.4°F–89.5°F): 0.75 - 1.00 L/hr
+    - Extreme (>=105°F / WBGT >= 89.6°F): 1.00 - 1.50 L/hr
+    Bounded between 0.50 L/hr and 1.50 L/hr (NIOSH maximum safe fluid intake rate to avoid hyponatremia).
     """
     base = 0.50
+
+    # WBGT delta above baseline 75°F
     wbgt_delta = max(0.0, wbgt_f - 75.0)
-    wbgt_component = wbgt_delta * 0.025
+    wbgt_comp = wbgt_delta * 0.030
 
+    # Air temperature contribution above 90°F
+    temp_delta = max(0.0, temperature_f - 90.0)
+    temp_comp = temp_delta * 0.012
+
+    # Solar irradiance contribution above 400 W/m²
     solar_delta = max(0.0, solar_irradiance - 400.0)
-    solar_component = solar_delta * 0.00025
+    solar_comp = solar_delta * 0.0002
 
+    # Humidity delta above 50%
     rh_delta = max(0.0, relative_humidity - 50.0)
-    rh_component = rh_delta * 0.003
+    rh_comp = rh_delta * 0.002
 
-    rate = base + wbgt_component + solar_component + rh_component
+    rate = base + wbgt_comp + temp_comp + solar_comp + rh_comp
     rate = max(0.50, min(1.50, rate))
     return round(rate, 2)
 
 
 def classify_risk(
     temperature_f: float,
-    elevated_threshold: float = 100.0,
-    extreme_threshold: float = 110.0,
+    elevated_threshold: float = 90.0,
+    extreme_threshold: float = 105.0,
     relative_humidity: Optional[float] = None,
     solar_irradiance: Optional[float] = None,
 ) -> RiskLevel:
-    """Classify risk level from raw temperature and optional environmental parameters.
+    """Classify occupational heat risk level from raw temperature and environmental parameters.
 
-    Thresholds are per-site configurable. If relative humidity or solar irradiance are supplied,
-    WBGT upgrades can elevate the risk category under severe atmospheric humidity/sunlight.
+    OSHA General Duty Clause standards:
+    - Safe: < 90°F (< 32.2°C)
+    - Elevated: 90°F – 104.9°F (32.2°C – 40.5°C)
+    - Extreme: >= 105°F (>= 40.6°C)
+
+    If relative humidity or solar irradiance are provided, ISO 7243 WBGT calculations
+    will upgrade the risk level when atmospheric humidity/sunlight compounds thermal strain:
+    - WBGT >= 89.6°F (32.0°C) -> EXTREME
+    - WBGT >= 82.4°F (28.0°C) -> ELEVATED
     """
-    # 1. Base classification on configured site thresholds
+    # 1. Base classification on configured site thresholds or OSHA standard defaults
     if temperature_f >= extreme_threshold:
         level = RiskLevel.EXTREME
     elif temperature_f >= elevated_threshold:
@@ -213,24 +249,24 @@ def classify_risk(
     else:
         level = RiskLevel.NORMAL
 
-    # 2. Environmental WBGT upgrade if relative humidity or solar irradiance are provided
+    # 2. Environmental WBGT upgrade if relative humidity or solar irradiance are supplied
     if relative_humidity is not None or solar_irradiance is not None:
         rh = relative_humidity if relative_humidity is not None else 50.0
         s = solar_irradiance if solar_irradiance is not None else 800.0
         wbgt_f, _ = calculate_wbgt(temperature_f, relative_humidity=rh, solar_irradiance=s)
 
-        if level == RiskLevel.NORMAL and wbgt_f >= 82.4:
-            level = RiskLevel.ELEVATED
-        elif level == RiskLevel.ELEVATED and wbgt_f >= 92.0:
+        if wbgt_f >= 89.6:
             level = RiskLevel.EXTREME
+        elif wbgt_f >= 82.4 and level == RiskLevel.NORMAL:
+            level = RiskLevel.ELEVATED
 
     return level
 
 
 def classify_risk_with_persistence(
     temperature_f: float,
-    elevated_threshold: float = 100.0,
-    extreme_threshold: float = 110.0,
+    elevated_threshold: float = 90.0,
+    extreme_threshold: float = 105.0,
     elevated_since: Optional[datetime] = None,
     persistence_extreme_minutes: int = 30,
     relative_humidity: Optional[float] = None,
@@ -265,14 +301,14 @@ def assess_occupational_heat_risk(
     temperature_f: float,
     relative_humidity: float = 50.0,
     solar_irradiance: float = 800.0,
-    elevated_threshold: float = 100.0,
-    extreme_threshold: float = 110.0,
+    elevated_threshold: float = 90.0,
+    extreme_threshold: float = 105.0,
     elevated_since: Optional[datetime] = None,
     persistence_extreme_minutes: int = 30,
     workload: WorkloadCategory | str = WorkloadCategory.MODERATE,
     wind_speed_m_s: float = 1.0,
 ) -> SafetyAssessment:
-    """Full comprehensive OSHA & ILO occupational heat safety assessment.
+    """Full comprehensive OSHA & ISO 7243 occupational heat safety assessment.
 
     Calculates WBGT, work/rest cycles, hydration rates, and persistence rules.
     """

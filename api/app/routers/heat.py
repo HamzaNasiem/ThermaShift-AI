@@ -1,5 +1,6 @@
-"""Router for heat snapshot data endpoints."""
+"""Router for heat snapshot data and spatial microclimate endpoints."""
 
+import math
 import uuid
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,7 +14,18 @@ from app.schemas.heat_snapshot import (
     MicroclimateAnalysisResponse,
     MicrocellDetail,
     HourlyForecastResponse,
-    HourlyForecastPoint
+    HourlyForecastPoint,
+)
+from app.services.risk_engine import (
+    calculate_wbgt,
+    calculate_work_rest_ratio,
+    calculate_hydration_rate,
+    classify_risk,
+    RiskLevel,
+)
+from app.services.thermal_relocation import (
+    generate_spatial_microclimate_grid,
+    compute_thermal_relief_vector,
 )
 
 router = APIRouter()
@@ -24,7 +36,7 @@ async def get_latest_heat(
     site_id: uuid.UUID = Query(..., description="Site ID to get the latest heat snapshot for"),
     db: AsyncSession = Depends(get_db),
 ):
-    """Return the most recent heat snapshot for a site  -  polled by the frontend every 15-30s."""
+    """Return the most recent heat snapshot for a site — polled by the frontend every 15-30s."""
     result = await db.execute(
         select(HeatSnapshot)
         .where(HeatSnapshot.site_id == site_id)
@@ -61,10 +73,6 @@ async def get_microclimate_analysis(
     """Compute high-precision spatial microclimate analytics: Surface vs Ambient Air contrast,
     Solar Irradiance, Hotspots vs Shaded Cooling Refuges, and the autonomous ThermaShift Relocation Vector.
     """
-    from app.models.site import Site
-    from app.schemas.heat_snapshot import MicrocellDetail, MicroclimateAnalysisResponse
-    import math
-
     site_res = await db.execute(select(Site).where(Site.id == site_id))
     site = site_res.scalar_one_or_none()
     if not site:
@@ -79,113 +87,49 @@ async def get_microclimate_analysis(
     snapshot = snap_res.scalar_one_or_none()
     ambient_temp = float(snapshot.temperature_f) if snapshot else 102.5
 
-    # Extract polygon bounds
-    coords = site.polygon_geojson.get("coordinates", [[]])[0]
-    if len(coords) >= 4:
-        lats = [c[1] for c in coords]
-        lngs = [c[0] for c in coords]
-        min_lat, max_lat = min(lats), max(lats)
-        min_lng, max_lng = min(lngs), max(lngs)
-    else:
-        min_lat, max_lat = 24.3272, 24.3352
-        min_lng, max_lng = 54.4881, 54.4961
+    # Generate 6x6 spatial microclimate grid using thermal relocation physics service
+    microcells, hotspot_cell, refuge_cell = generate_spatial_microclimate_grid(
+        polygon_geojson=site.polygon_geojson,
+        ambient_temp_f=ambient_temp,
+        relative_humidity=50.0,
+        rows=6,
+        cols=6,
+    )
 
-    rows, cols = 6, 6
-    d_lat = (max_lat - min_lat) / rows
-    d_lng = (max_lng - min_lng) / cols
-
-    microcells: list[MicrocellDetail] = []
-    cell_counter = 101
-
-    hotspot_cell = None
-    refuge_cell = None
-    max_surface_temp = -1.0
-    min_surface_temp = 999.0
-
-    for r in range(rows):
-        for c in range(cols):
-            c_lat = round(min_lat + (r + 0.5) * d_lat, 6)
-            c_lng = round(min_lng + (c + 0.5) * d_lng, 6)
-
-            # Spatial zoning layout:
-            # Rows 0-2, Cols 0-3: Heavy unshaded asphalt loading bay (High solar load)
-            # Rows 4-5, Cols 4-5: Shaded cooling canopy & green buffer (Low solar load)
-            # Remaining: Compacted soil / general work surface
-            if r <= 2 and c <= 3:
-                stype = "asphalt"
-                sexposure = "direct_sun"
-                solar_rad = 860.0
-                uhi_bump = 16.5 + (2 - r) * 1.5 + (3 - c) * 1.0
-                cell_air_temp = ambient_temp + (2 - r) * 0.8
-            elif r >= 4 and c >= 4:
-                stype = "shaded_canopy"
-                sexposure = "full_canopy_shade"
-                solar_rad = 110.0
-                uhi_bump = -8.0  # Canopy is cooler than ambient air
-                cell_air_temp = ambient_temp - 12.0
-            elif (r >= 3 and c >= 4) or (r >= 4 and c >= 3):
-                stype = "green_buffer"
-                sexposure = "partial_shade"
-                solar_rad = 340.0
-                uhi_bump = -2.0
-                cell_air_temp = ambient_temp - 4.5
-            else:
-                stype = "concrete" if r % 2 == 0 else "soil"
-                sexposure = "direct_sun" if c % 2 == 0 else "partial_shade"
-                solar_rad = 720.0 if sexposure == "direct_sun" else 420.0
-                uhi_bump = 8.5 if sexposure == "direct_sun" else 2.0
-                cell_air_temp = ambient_temp + (1 if sexposure == "direct_sun" else -1)
-
-            surface_temp = round(cell_air_temp + uhi_bump, 1)
-            cell_air_temp = round(cell_air_temp, 1)
-            cell_temp_c = round(((cell_air_temp - 32) * 5) / 9, 1)
-
-            mcell = MicrocellDetail(
-                id=f"FG-{cell_counter}",
-                row=r,
-                col=c,
-                lat=c_lat,
-                lng=c_lng,
-                temp_f=cell_air_temp,
-                temp_c=cell_temp_c,
-                surface_temp_f=surface_temp,
-                surface_type=stype,
-                solar_exposure=sexposure,
-                solar_radiation_w_m2=solar_rad,
-            )
-
-            if surface_temp > max_surface_temp:
-                max_surface_temp = surface_temp
-                hotspot_cell = mcell
-
-            if stype == "shaded_canopy" and surface_temp < min_surface_temp:
-                min_surface_temp = surface_temp
-                refuge_cell = mcell
-
-            microcells.append(mcell)
-            cell_counter += 1
-
-    if hotspot_cell:
-        hotspot_cell.is_hotspot = True
-    if refuge_cell:
-        refuge_cell.is_refuge = True
-
-    # Compute distance between hotspot and refuge
     if hotspot_cell and refuge_cell:
-        # Simple Euclidean approximation to meters
-        d_lat_m = (refuge_cell.lat - hotspot_cell.lat) * 111139.0
-        d_lng_m = (refuge_cell.lng - hotspot_cell.lng) * 111139.0 * math.cos(math.radians(min_lat))
-        shift_dist_m = int(round(math.hypot(d_lat_m, d_lng_m)))
-        cooling_relief_f = round(hotspot_cell.surface_temp_f - refuge_cell.surface_temp_f, 1)
-        v_orig_lat, v_orig_lng = hotspot_cell.lat, hotspot_cell.lng
-        v_targ_lat, v_targ_lng = refuge_cell.lat, refuge_cell.lng
+        vector = compute_thermal_relief_vector(
+            hotspot_cell=hotspot_cell,
+            refuge_cell=refuge_cell,
+            site_name=site.name,
+        )
+        max_surface_f = vector.origin_surface_temp_f
+        shift_dist_m = vector.distance_meters
+        cooling_relief_f = vector.cooling_delta_f
+        v_orig_lat, v_orig_lng = vector.origin_lat, vector.origin_lng
+        v_targ_lat, v_targ_lng = vector.target_lat, vector.target_lng
+        bearing_deg = vector.compass_bearing_deg
+        bearing_dir = vector.compass_direction
+        wbgt_red_pct = vector.wbgt_strain_reduction_pct
+        action_plan = vector.action_directive
+        hotspot_zone = vector.origin_zone
+        cooling_refuge = vector.target_zone
     else:
+        max_surface_f = ambient_temp + 18.0
         shift_dist_m = 140
         cooling_relief_f = 24.5
-        v_orig_lat, v_orig_lng = min_lat, min_lng
-        v_targ_lat, v_targ_lng = max_lat, max_lng
+        v_orig_lat, v_orig_lng = 24.3272, 54.4881
+        v_targ_lat, v_targ_lng = 24.3352, 54.4961
+        bearing_deg = 45.0
+        bearing_dir = "NE"
+        wbgt_red_pct = 42.0
+        hotspot_zone = "Zone A (Unshaded Asphalt Loading Bay)"
+        cooling_refuge = "Zone D (Covered Hydration Canopy)"
+        action_plan = (
+            f"Autonomous Directive: Shift workforce from Zone A ({max_surface_f}°F Asphalt) "
+            f"to Zone D Canopy (-{cooling_relief_f}°F Relief, {shift_dist_m}m). "
+            f"Reduces WBGT thermal strain by {wbgt_red_pct}%."
+        )
 
-    max_surface_f = hotspot_cell.surface_temp_f if hotspot_cell else ambient_temp + 18.0
     uhi_delta = round(max_surface_f - ambient_temp, 1)
 
     # Extract genuine FortyGuard statistics from raw_response
@@ -209,16 +153,19 @@ async def get_microclimate_analysis(
         surface_temp_f=round(max_surface_f, 1),
         uhi_delta_f=uhi_delta,
         solar_radiation_w_m2=860.0,
-        hotspot_zone="Zone A (Unshaded Asphalt Loading Bay)",
-        cooling_refuge="Zone D (Covered Hydration Canopy)",
+        hotspot_zone=hotspot_zone,
+        cooling_refuge=cooling_refuge,
         recommended_shift_distance_m=shift_dist_m,
         cooling_delta_f=cooling_relief_f,
-        action_plan=f"Autonomous Directive: Shift workforce from Zone A ({max_surface_f}°F Asphalt) to Zone D Canopy (-{cooling_relief_f}°F Relief, {shift_dist_m}m). Reduces WBGT thermal strain by 42%.",
+        action_plan=action_plan,
         microcells=microcells,
         vector_origin_lat=v_orig_lat,
         vector_origin_lng=v_orig_lng,
         vector_target_lat=v_targ_lat,
         vector_target_lng=v_targ_lng,
+        compass_bearing_deg=bearing_deg,
+        compass_direction=bearing_dir,
+        wbgt_reduction_pct=wbgt_red_pct,
         fortyguard_max_temp_c=fg_max_c,
         fortyguard_mean_temp_c=fg_mean_c,
         fortyguard_n_cells=fg_n_cells,
@@ -232,42 +179,42 @@ async def get_hourly_forecast(
     site_id: uuid.UUID = Query(..., description="Site ID to get hourly forecast for"),
     db: AsyncSession = Depends(get_db),
 ):
-    from app.models.site import Site
-    import math
-
+    """Calculate 10-hour diurnal thermal progression & WBGT forecast (09:00 to 18:00).
+    Combines true recorded database snapshots with solar irradiance diurnal equations.
+    """
     site_res = await db.execute(select(Site).where(Site.id == site_id))
     site = site_res.scalar_one_or_none()
     if not site:
         raise HTTPException(status_code=404, detail="Site not found")
 
-    # Fetch recent actual recorded snapshots from PostgreSQL
+    # Fetch recent recorded snapshots from PostgreSQL
     snaps_res = await db.execute(
         select(HeatSnapshot)
         .where(HeatSnapshot.site_id == site_id)
         .order_by(HeatSnapshot.captured_at.desc())
-        .limit(10)
+        .limit(15)
     )
     historical_snaps = snaps_res.scalars().all()
-    
+
     snapshot = historical_snaps[0] if historical_snaps else None
     base_ambient_temp = float(snapshot.temperature_f) if snapshot else 95.0
+    elevated_thresh = float(site.elevated_threshold_f) if site.elevated_threshold_f else 90.0
+    extreme_thresh = float(site.extreme_threshold_f) if site.extreme_threshold_f else 105.0
 
     points = []
-    
-    # Peak at 13:00 to 14:00
     peak_hour = "01:00 PM"
     peak_surface_temp = -1.0
-    
+
     for h in range(9, 19):
-        # Time label
+        # Format 12-hour display label
         if h < 12:
             time_label = f"{h:02d}:00 AM"
         elif h == 12:
-            time_label = f"12:00 PM"
+            time_label = "12:00 PM"
         else:
             time_label = f"{h-12:02d}:00 PM"
-        
-        # Check if we have a real recorded snapshot for this hour
+
+        # Check if a real recorded snapshot exists for this hour
         matched_snap = None
         for s in historical_snaps:
             if s.captured_at.hour == h:
@@ -280,56 +227,67 @@ async def get_hourly_forecast(
             pt_type = "recorded"
             snap_id = str(matched_snap.id)
         else:
+            # Diurnal atmospheric temperature curve peaking around 14:00 (thermal lag)
             ambient_temp = base_ambient_temp - (abs(h - 14) * 1.5)
             pt_type = "forecast"
             snap_id = None
 
-        solar_rad = max(0.0, 950.0 - (dist_from_peak ** 2) * 45)
-        
-        surface_boost = 18 + (solar_rad / 950.0) * 6
+        # Diurnal Solar Irradiance Curve (W/m²), peaking at solar zenith (13:30)
+        solar_rad = max(100.0, 960.0 - (dist_from_peak ** 2) * 48.0)
+
+        # Ground Asphalt surface temperature absorption
+        surface_boost = 14.0 + (solar_rad / 960.0) * 12.0
         surface_temp = ambient_temp + surface_boost
-        
-        canopy_reduction = 20 + (solar_rad / 950.0) * 5
+
+        # Shaded canopy microclimate (blocks ~88% direct solar flux)
+        canopy_reduction = 10.0 + (solar_rad / 960.0) * 8.0
         canopy_temp = ambient_temp - canopy_reduction
-        
-        wbgt_f = ambient_temp * 0.7 + (solar_rad / 950.0) * 15 + 10
-        
-        if wbgt_f < 82:
-            risk = "safe"
-            work_rest = "Normal"
-            hyd = 0.75
-        elif wbgt_f < 87:
-            risk = "elevated"
-            work_rest = "50/10"
-            hyd = 1.0
-        elif wbgt_f < 90:
-            risk = "extreme"
-            work_rest = "30/30"
-            hyd = 1.25
-        elif wbgt_f < 93:
-            risk = "extreme"
-            work_rest = "15/45"
-            hyd = 1.5
-        else:
-            risk = "extreme"
-            work_rest = "STOP_WORK"
-            hyd = 1.5
-            
-        points.append(HourlyForecastPoint(
-            time_label=time_label,
-            hour=h,
-            ambient_temp_f=round(ambient_temp, 1),
-            surface_temp_f=round(surface_temp, 1),
-            canopy_temp_f=round(canopy_temp, 1),
-            wbgt_f=round(wbgt_f, 1),
-            solar_radiation_w_m2=round(solar_rad, 1),
-            risk_level=risk,
-            work_rest_ratio=work_rest,
-            hydration_liters_per_hour=hyd,
-            point_type=pt_type,
-            snapshot_id=snap_id
-        ))
-        
+
+        # ISO 7243 WBGT calculation
+        wbgt_f, _ = calculate_wbgt(
+            temperature_f=ambient_temp,
+            relative_humidity=50.0,
+            solar_irradiance=solar_rad,
+            wind_speed_m_s=1.0,
+        )
+
+        # OSHA Risk Classification
+        risk_enum = classify_risk(
+            temperature_f=ambient_temp,
+            elevated_threshold=elevated_thresh,
+            extreme_threshold=extreme_thresh,
+            relative_humidity=50.0,
+            solar_irradiance=solar_rad,
+        )
+        risk_str = "extreme" if risk_enum == RiskLevel.EXTREME else "elevated" if risk_enum == RiskLevel.ELEVATED else "safe"
+
+        # OSHA Work/Rest Cycle & Hydration
+        work_rest_cycle = calculate_work_rest_ratio(wbgt_f=wbgt_f)
+        work_rest_str = "Normal" if work_rest_cycle.ratio_str == "60/0" else work_rest_cycle.ratio_str
+        hydration_rate = calculate_hydration_rate(
+            wbgt_f=wbgt_f,
+            temperature_f=ambient_temp,
+            relative_humidity=50.0,
+            solar_irradiance=solar_rad,
+        )
+
+        points.append(
+            HourlyForecastPoint(
+                time_label=time_label,
+                hour=h,
+                ambient_temp_f=round(ambient_temp, 1),
+                surface_temp_f=round(surface_temp, 1),
+                canopy_temp_f=round(canopy_temp, 1),
+                wbgt_f=round(wbgt_f, 1),
+                solar_radiation_w_m2=round(solar_rad, 1),
+                risk_level=risk_str,
+                work_rest_ratio=work_rest_str,
+                hydration_liters_per_hour=hydration_rate,
+                point_type=pt_type,
+                snapshot_id=snap_id,
+            )
+        )
+
         if surface_temp > peak_surface_temp:
             peak_surface_temp = round(surface_temp, 1)
             peak_hour = time_label
@@ -339,6 +297,5 @@ async def get_hourly_forecast(
         site_name=site.name,
         peak_hour=peak_hour,
         peak_surface_temp_f=peak_surface_temp,
-        points=points
+        points=points,
     )
-

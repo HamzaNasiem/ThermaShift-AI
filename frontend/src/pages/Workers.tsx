@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getSites, getWorkers, createWorker, deleteWorker } from '../lib/api'
 import DirectCallModal from '../components/DirectCallModal'
+import CalleLiveModal from '../components/CalleLiveModal'
 import type { Site, Worker } from '../types'
 
 export default function Workers() {
@@ -8,6 +9,7 @@ export default function Workers() {
   const [selectedSiteId, setSelectedSiteId] = useState<string>('')
   const [workers, setWorkers] = useState<Worker[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   
   // Enroll Modal State
   const [showEnrollModal, setShowEnrollModal] = useState(false)
@@ -16,8 +18,9 @@ export default function Workers() {
   const [lang, setLang] = useState<'en' | 'ur'>('en')
   const [enrolling, setEnrolling] = useState(false)
 
-  // Direct Call Modal & Delete State
+  // Direct Call Modal & Live Stream State
   const [directCallTarget, setDirectCallTarget] = useState<{ name: string; phone: string } | null>(null)
+  const [activeCalleCallId, setActiveCalleCallId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -26,15 +29,20 @@ export default function Workers() {
       if (data.length > 0) {
         setSelectedSiteId(data[0].id)
       }
-    }).catch(console.error)
+    }).catch((err) => {
+      setError(err.message || 'Failed to load sites')
+    })
   }, [])
 
   function loadWorkers(siteId: string) {
     if (!siteId) return
     setLoading(true)
+    setError(null)
     getWorkers(siteId)
       .then(setWorkers)
-      .catch(console.error)
+      .catch((err) => {
+        setError(err.message || 'Failed to load workers')
+      })
       .finally(() => setLoading(false))
   }
 
@@ -137,6 +145,16 @@ export default function Workers() {
           Personnel on Site: <span className="font-bold text-[#141414] text-sm tabular-nums">{workers.length}</span>
         </div>
       </div>
+
+      {/* Error Alert */}
+      {error && (
+        <div className="card-surface p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between shadow-sm">
+          <span className="font-medium">⚠️ {error}</span>
+          <button onClick={() => selectedSiteId && loadWorkers(selectedSiteId)} className="btn-primary text-xs py-1 px-3">
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* Workers Roster Grid */}
       {loading ? (
@@ -284,12 +302,24 @@ export default function Workers() {
         </div>
       )}
 
+      {/* Live Stream Telemetry Modal */}
+      {activeCalleCallId && (
+        <CalleLiveModal
+          callId={activeCalleCallId}
+          onClose={() => setActiveCalleCallId(null)}
+        />
+      )}
+
       {/* Direct Call Modal */}
       {directCallTarget && (
         <DirectCallModal
           initialWorkerName={directCallTarget.name}
           initialPhoneNumber={directCallTarget.phone}
           onClose={() => setDirectCallTarget(null)}
+          onTrackCall={(callId) => {
+            setDirectCallTarget(null)
+            setActiveCalleCallId(callId)
+          }}
         />
       )}
     </div>

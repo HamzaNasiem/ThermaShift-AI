@@ -102,7 +102,7 @@ export default function ProductStoryModal({ onClose, onTriggerTest }: ProductSto
         </div>
 
         {/* Step Navigation Pills */}
-        <div className="shrink-0 p-3 bg-[#f9fafb] border-b border-slate-200 grid grid-cols-4 gap-2">
+        <div className="shrink-0 p-2.5 sm:p-3 bg-[#f9fafb] border-b border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2">
           {STORY_STEPS.map((s, idx) => (
             <button
               key={s.step}
@@ -188,8 +188,8 @@ export default function ProductStoryModal({ onClose, onTriggerTest }: ProductSto
         </div>
 
         {/* Footer Controls */}
-        <div className="shrink-0 p-3.5 border-t border-slate-200 flex items-center justify-between bg-[#ffffff]">
-          <div className="flex items-center gap-1.5">
+        <div className="shrink-0 p-3.5 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2.5 bg-[#ffffff]">
+          <div className="flex items-center gap-1.5 w-full sm:w-auto justify-between sm:justify-start">
             <button
               disabled={activeStep === 0}
               onClick={() => setActiveStep((prev) => Math.max(0, prev - 1))}
@@ -206,7 +206,7 @@ export default function ProductStoryModal({ onClose, onTriggerTest }: ProductSto
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
             {onTriggerTest && (
               <button
                 onClick={() => {

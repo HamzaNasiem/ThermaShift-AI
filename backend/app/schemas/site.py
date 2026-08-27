@@ -15,6 +15,15 @@ class SiteCreate(BaseModel):
     manager_id: uuid.UUID | None = None
 
 
+class SiteUpdate(BaseModel):
+    name: str | None = None
+    polygon_geojson: dict[str, Any] | None = None
+    extreme_threshold_f: float | None = None
+    elevated_threshold_f: float | None = None
+    poll_interval_minutes: int | None = None
+    manager_id: uuid.UUID | None = None
+
+
 class SiteResponse(BaseModel):
     id: uuid.UUID
     name: str

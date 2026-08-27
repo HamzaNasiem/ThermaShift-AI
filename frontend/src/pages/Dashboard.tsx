@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { getSites, getFortyGuardUsage, triggerCheck, getMicroclimateAnalysis, getHourlyForecast } from '../lib/api'
 import { useLiveHeat } from '../hooks/useLiveHeat'
+import ErrorBoundary from '../components/ErrorBoundary'
 import HeatMap from '../components/HeatMap'
 import WorkerCard from '../components/WorkerCard'
 import AutonomousGuardianFeed from '../components/AutonomousGuardianFeed'
@@ -73,7 +74,7 @@ export default function Dashboard() {
     }
   }, [selectedSiteId, sites])
 
-  const { snapshot, alerts, workers, loading } = useLiveHeat(selectedSiteId)
+  const { snapshot, alerts, workers, loading, refetch } = useLiveHeat(selectedSiteId)
 
   // Real snapshot telemetry only
   const currentTempF: number | null = snapshot ? Math.round(snapshot.temperature_f * 10) / 10 : (microclimate ? microclimate.ambient_temp_f : null)
@@ -85,6 +86,7 @@ export default function Dashboard() {
     setEmergencyStatus(null)
     try {
       const res = await triggerCheck(selectedSiteId, true)
+      await refetch()
       if (res.alerts_dispatched) {
         setEmergencyStatus(`✅ Emergency voice dispatch completed (Snapshot #${res.snapshot_id?.slice(0, 8)}). Stream updated below.`)
       } else {
@@ -231,21 +233,25 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Left Column (4 cols): Telemetry & Protected Crew */}
         <div className="lg:col-span-4 flex flex-col space-y-4">
-          <MicroclimateTelemetryCard 
-            data={microclimate} 
-            loading={microLoading} 
-            onBroadcastClick={handleEmergencySpikeToggle}
-          />
+          <ErrorBoundary fallbackTitle="Microclimate Telemetry">
+            <MicroclimateTelemetryCard 
+              data={microclimate} 
+              loading={microLoading} 
+              onBroadcastClick={handleEmergencySpikeToggle}
+            />
+          </ErrorBoundary>
 
-          <AudioVoicePlayer
-            workerName={workers[0]?.name || 'Site Supervisor'}
-            siteName={selectedSite?.name || 'Heavy Industrial Work Site'}
-            surfaceTempF={microclimate?.surface_temp_f ?? 128.9}
-            refugeName={microclimate?.cooling_refuge || 'Zone D Shaded Canopy'}
-            reliefDeltaF={microclimate?.cooling_delta_f ?? 38.5}
-            language={workers[0]?.preferred_language || 'en'}
-            onDirectCallClick={() => setShowDirectCallModal(true)}
-          />
+          <ErrorBoundary fallbackTitle="Voice Dispatch Simulator">
+            <AudioVoicePlayer
+              workerName={workers[0]?.name || 'Site Supervisor'}
+              siteName={selectedSite?.name || 'Heavy Industrial Work Site'}
+              surfaceTempF={microclimate?.surface_temp_f ?? 128.9}
+              refugeName={microclimate?.cooling_refuge || 'Zone D Shaded Canopy'}
+              reliefDeltaF={microclimate?.cooling_delta_f ?? 38.5}
+              language={workers[0]?.preferred_language || 'en'}
+              onDirectCallClick={() => setShowDirectCallModal(true)}
+            />
+          </ErrorBoundary>
 
           {/* Active Crew Roster */}
           <div className="card-surface p-4 space-y-3">
@@ -280,26 +286,32 @@ export default function Dashboard() {
         {/* Center Column (5 cols): Geospatial Thermal Radar */}
         <div className="lg:col-span-5 flex flex-col space-y-4">
           <div className="card-surface p-2 shadow-sm flex-1 min-h-[500px] flex flex-col">
-            <HeatMap site={selectedSite} riskLevel={riskLevel} snapshot={snapshot} microclimate={microclimate} />
+            <ErrorBoundary fallbackTitle="Geospatial Heat Radar">
+              <HeatMap site={selectedSite} riskLevel={riskLevel} snapshot={snapshot} microclimate={microclimate} />
+            </ErrorBoundary>
           </div>
         </div>
 
         {/* Right Column (3 cols): Autonomous Dispatch Stream */}
         <div className="lg:col-span-3 flex flex-col space-y-4">
           <div className="card-surface p-4 flex-1">
-            <AutonomousGuardianFeed
-              snapshot={snapshot}
-              alerts={alerts}
-              siteName={selectedSite?.name || 'Industrial Worksite'}
-              onTrackCall={(callId) => setActiveCalleCallId(callId)}
-            />
+            <ErrorBoundary fallbackTitle="Action & Dispatch Stream">
+              <AutonomousGuardianFeed
+                snapshot={snapshot}
+                alerts={alerts}
+                siteName={selectedSite?.name || 'Industrial Worksite'}
+                onTrackCall={(callId) => setActiveCalleCallId(callId)}
+              />
+            </ErrorBoundary>
           </div>
         </div>
       </div>
 
       {/* Hourly Diurnal Forecast Chart */}
       {forecastData.length > 0 && (
-        <HourlyThermalForecastChart data={forecastData} />
+        <ErrorBoundary fallbackTitle="Diurnal Thermal Forecast">
+          <HourlyThermalForecastChart data={forecastData} />
+        </ErrorBoundary>
       )}
 
       {/* Modals */}
@@ -323,6 +335,10 @@ export default function Dashboard() {
       {showDirectCallModal && (
         <DirectCallModal
           onClose={() => setShowDirectCallModal(false)}
+          onTrackCall={(callId) => {
+            setShowDirectCallModal(false)
+            setActiveCalleCallId(callId)
+          }}
         />
       )}
 

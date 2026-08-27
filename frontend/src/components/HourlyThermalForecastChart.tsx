@@ -56,7 +56,7 @@ export function HourlyThermalForecastChart({ data }: HourlyThermalForecastChartP
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-4 text-xs font-semibold">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 text-xs font-semibold">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />
             <span className="text-rose-600">Surface Asphalt</span>

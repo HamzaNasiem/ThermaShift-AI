@@ -4,6 +4,8 @@ import re
 import logging
 from app.core.config import settings
 
+from app.integrations.calle import format_e164, sanitize_api_key
+
 logger = logging.getLogger(__name__)
 
 MESSAGE_TEMPLATES: dict[str, str] = {
@@ -12,25 +14,18 @@ MESSAGE_TEMPLATES: dict[str, str] = {
 }
 
 
-def format_e164(phone: str) -> str:
-    """Format phone number to E.164 standard (+[country code][digits])."""
-    if not phone:
-        raise ValueError("Phone number cannot be empty")
-    cleaned = re.sub(r"[^\d+]", "", phone.strip())
-    if not cleaned.startswith("+"):
-        cleaned = f"+{cleaned}"
-    return cleaned
-
-
 def send_sms(worker, site, snapshot) -> str:
     """Send an SMS alert to a worker with bilingual dynamic context. Returns Twilio message SID."""
-    if not settings.twilio_account_sid or not settings.twilio_auth_token:
+    account_sid = sanitize_api_key(settings.twilio_account_sid)
+    auth_token = sanitize_api_key(settings.twilio_auth_token)
+
+    if not account_sid or not auth_token:
         raise ValueError("Twilio credentials not set. Set TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN in .env.")
 
     # Import here to avoid import error when Twilio is not needed
     from twilio.rest import Client
 
-    client = Client(settings.twilio_account_sid, settings.twilio_auth_token)
+    client = Client(account_sid, auth_token)
     
     preferred_lang = getattr(worker, "preferred_language", "ur") or "ur"
     language = preferred_lang if preferred_lang in ("ur", "en") else "en"

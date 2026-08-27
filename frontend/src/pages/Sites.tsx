@@ -8,18 +8,22 @@ export default function Sites() {
   const [sites, setSites] = useState<Site[]>([])
   const [workers, setWorkers] = useState<Worker[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const navigate = useNavigate()
 
   function loadData() {
     setLoading(true)
+    setError(null)
     Promise.all([getSites(), getWorkers()])
       .then(([sitesData, workersData]) => {
         setSites(sitesData)
         setWorkers(workersData)
       })
-      .catch(console.error)
+      .catch((err) => {
+        setError(err.message || 'Failed to sync job sites')
+      })
       .finally(() => setLoading(false))
   }
 
@@ -66,6 +70,16 @@ export default function Sites() {
           <span>Register New Work Site</span>
         </button>
       </div>
+
+      {/* Error Alert */}
+      {error && (
+        <div className="card-surface p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between shadow-sm">
+          <span className="font-medium">⚠️ {error}</span>
+          <button onClick={loadData} className="btn-primary text-xs py-1 px-3">
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* Sites Grid */}
       {loading ? (

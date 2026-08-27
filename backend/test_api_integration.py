@@ -218,6 +218,30 @@ async def test_list_alerts_endpoint():
 
 async def test_trigger_check_force_extreme_endpoint():
     """Verify manual P0 trigger-check endpoint with force_extreme=true."""
+    from unittest.mock import patch, AsyncMock
+    with patch("app.services.notifier.calle.trigger_outbound_call", new_callable=AsyncMock) as mock_call, \
+         patch("app.services.notifier.twilio_sms.send_sms") as mock_sms:
+        mock_call.return_value = "mock_call_integration_123"
+        mock_sms.return_value = "mock_sms_integration_123"
+
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            sites_res = await client.get("/sites")
+            assert sites_res.status_code == 200
+            sites = sites_res.json()
+            target_site = get_target_site(sites)
+            site_id = target_site["id"]
+
+            response = await client.post(f"/internal/trigger-check?site_id={site_id}&force_extreme=true")
+            assert response.status_code == 200
+            data = response.json()
+            assert data["risk_level"] == "extreme"
+            assert data["temperature_f"] == 112.0
+            assert data["alerts_dispatched"] is True
+            assert "snapshot_id" in data
+
+
+async def test_get_microclimate_endpoint():
+    """Verify microclimate spatial grid and thermal relocation vector calculation endpoint."""
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         sites_res = await client.get("/sites")
         assert sites_res.status_code == 200
@@ -225,10 +249,46 @@ async def test_trigger_check_force_extreme_endpoint():
         target_site = get_target_site(sites)
         site_id = target_site["id"]
 
-        response = await client.post(f"/internal/trigger-check?site_id={site_id}&force_extreme=true")
+        response = await client.get(f"/heat/microclimate?site_id={site_id}")
         assert response.status_code == 200
         data = response.json()
-        assert data["risk_level"] == "extreme"
-        assert data["temperature_f"] == 112.0
-        assert data["alerts_dispatched"] is True
-        assert "snapshot_id" in data
+        assert data["site_id"] == site_id
+        assert "ambient_temp_f" in data
+        assert "surface_temp_f" in data
+        assert "cooling_delta_f" in data
+        assert "recommended_shift_distance_m" in data
+        assert "compass_bearing_deg" in data
+        assert "compass_direction" in data
+        assert "microcells" in data
+        assert len(data["microcells"]) == 36
+        assert "action_plan" in data
+        assert "Autonomous Directive" in data["action_plan"]
+
+
+async def test_get_hourly_forecast_endpoint():
+    """Verify 10-hour diurnal thermal progression & WBGT forecast endpoint (09:00 - 18:00)."""
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        sites_res = await client.get("/sites")
+        assert sites_res.status_code == 200
+        sites = sites_res.json()
+        target_site = get_target_site(sites)
+        site_id = target_site["id"]
+
+        response = await client.get(f"/heat/hourly-forecast?site_id={site_id}")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["site_id"] == site_id
+        assert "peak_hour" in data
+        assert "peak_surface_temp_f" in data
+        assert "points" in data
+        assert len(data["points"]) == 10  # 09:00 to 18:00
+
+        first_pt = data["points"][0]
+        assert first_pt["hour"] == 9
+        assert first_pt["time_label"] == "09:00 AM"
+        assert "wbgt_f" in first_pt
+        assert "work_rest_ratio" in first_pt
+        assert "hydration_liters_per_hour" in first_pt
+        assert first_pt["hydration_liters_per_hour"] >= 0.50
+
+

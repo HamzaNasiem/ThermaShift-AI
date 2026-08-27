@@ -1,4 +1,4 @@
-"""Unit tests for Retell AI, Twilio SMS integrations, and Notifier alert dispatch service."""
+"""Unit tests for CALL-E AI Voice, Twilio SMS integrations, and Notifier alert dispatch service."""
 
 import pytest
 import uuid
@@ -22,14 +22,16 @@ def test_format_e164():
 
 
 @pytest.mark.asyncio
-async def test_retell_trigger_outbound_call_bilingual():
-    """Test Retell AI outbound call payload construction for Urdu and English workers."""
+async def test_calle_trigger_outbound_call():
+    """Test CALL-E AI outbound call payload construction."""
     class DummyWorker:
+        id = uuid.uuid4()
         name = "Ahmed Khan"
         phone_number = "+923001234567"
-        preferred_language = "ur"
+        preferred_language = "en"
 
     class DummySite:
+        id = uuid.uuid4()
         name = "Malir Worksite 1"
 
     class DummySnapshot:
@@ -40,14 +42,13 @@ async def test_retell_trigger_outbound_call_bilingual():
     site = DummySite()
     snapshot = DummySnapshot()
 
-    with patch("app.integrations.retell.settings") as mock_settings:
-        mock_settings.retell_api_key = "test_key"
-        mock_settings.retell_from_number = "+14155550000"
-        mock_settings.retell_agent_id = "agent_123"
+    with patch("app.integrations.calle.settings") as mock_settings:
+        mock_settings.calle_api_key = "test_key"
+        mock_settings.calle_base_url = "https://api.heycall-e.com/v1"
 
         mock_response = MagicMock()
         mock_response.status_code = 200
-        mock_response.json.return_value = {"call_id": "call_abc_123"}
+        mock_response.json.return_value = {"id": "call_abc_123"}
         mock_response.raise_for_status = MagicMock()
 
         with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
@@ -59,16 +60,12 @@ async def test_retell_trigger_outbound_call_bilingual():
             mock_post.assert_called_once()
             _, kwargs = mock_post.call_args
             payload = kwargs["json"]
-            assert payload["to_number"] == "+923001234567"
-            assert payload["from_number"] == "+14155550000"
-            assert payload["override_agent_id"] == "agent_123"
-
-            dynamic_vars = payload["retell_llm_dynamic_variables"]
-            assert dynamic_vars["worker_name"] == "Ahmed Khan"
-            assert dynamic_vars["site_name"] == "Malir Worksite 1"
-            assert dynamic_vars["temperature_f"] == "112"
-            assert dynamic_vars["risk_level"] == "extreme"
-            assert dynamic_vars["language"] == "ur"
+            assert "Ahmed Khan" in payload["task"]
+            assert "Malir Worksite 1" in payload["task"]
+            assert "112" in payload["task"]
+            assert payload["metadata"]["worker_name"] == "Ahmed Khan"
+            assert payload["metadata"]["temperature_f"] == 112.4
+            assert payload["metadata"]["risk_level"] == "extreme"
 
 
 def test_twilio_send_sms_bilingual():
@@ -148,7 +145,7 @@ async def test_notifier_dispatch_consent_filtering():
     mock_db.execute.return_value = mock_result
 
     with patch("app.services.notifier.already_notified", new_callable=AsyncMock) as mock_dedupe, \
-         patch("app.services.notifier.retell.trigger_outbound_call", new_callable=AsyncMock) as mock_call, \
+         patch("app.services.notifier.calle.trigger_outbound_call", new_callable=AsyncMock) as mock_call, \
          patch("app.services.notifier.twilio_sms.send_sms") as mock_sms, \
          patch("app.services.notifier._log_action", new_callable=AsyncMock) as mock_log:
 
@@ -194,12 +191,12 @@ async def test_notifier_dispatch_voice_failure_sms_fallback():
     mock_db.execute.return_value = mock_result
 
     with patch("app.services.notifier.already_notified", new_callable=AsyncMock) as mock_dedupe, \
-         patch("app.services.notifier.retell.trigger_outbound_call", new_callable=AsyncMock) as mock_call, \
+         patch("app.services.notifier.calle.trigger_outbound_call", new_callable=AsyncMock) as mock_call, \
          patch("app.services.notifier.twilio_sms.send_sms") as mock_sms, \
          patch("app.services.notifier._log_action", new_callable=AsyncMock) as mock_log:
 
         mock_dedupe.return_value = False
-        mock_call.side_effect = Exception("Retell API connection failed")
+        mock_call.side_effect = Exception("CALL-E API connection failed")
         mock_sms.return_value = "sms_fallback_sid"
 
         await notifier.dispatch(mock_db, MockSite(), MockSnapshot())
