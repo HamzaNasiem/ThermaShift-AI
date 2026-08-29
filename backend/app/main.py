@@ -128,6 +128,21 @@ app.include_router(alerts.router, prefix="/api/alerts", tags=["Alerts API"])
 app.include_router(internal.router, prefix="/api/internal", tags=["Internal API"])
 
 
+@app.get("/", tags=["Root"])
+@app.get("/api", tags=["Root"])
+async def root_index():
+    """Service landing and health summary endpoint."""
+    return {
+        "service": "ThermaShift AI API",
+        "description": "Autonomous Heat-Safety Telemetry & Alert System for Outdoor Workers",
+        "status": "online",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/health",
+        "frontend": "https://thermashift-ai.vercel.app"
+    }
+
+
 @app.get("/health", tags=["Health"])
 @app.get("/api/health", tags=["Health"])
 async def health_check():
