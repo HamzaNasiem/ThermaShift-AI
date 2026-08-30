@@ -5,6 +5,7 @@
 
 [![Live Frontend](https://img.shields.io/badge/Frontend-thermashift--ai.vercel.app-00DC82?style=for-the-badge&logo=vercel&logoColor=white)](https://thermashift-ai.vercel.app)
 [![API Engine](https://img.shields.io/badge/Backend-thermashift--ai.onrender.com-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://thermashift-ai.onrender.com)
+[![Video Demo](https://img.shields.io/badge/Video_Demo-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=Rwnp5l3qAh0)
 [![Swagger Docs](https://img.shields.io/badge/Swagger_Docs-API_Reference-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://thermashift-ai.onrender.com/docs)
 [![Database](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
 [![Thermal Data](https://img.shields.io/badge/FortyGuard-Hyperlocal_API-FF6B6B?style=for-the-badge)](https://fortyguard.com)
@@ -15,9 +16,18 @@
 
 **ThermaShift AI** is an enterprise-grade, autonomous environmental safety platform that protects outdoor industrial and agricultural personnel from fatal heat strain. By directly ingesting **FortyGuard’s satellite-derived thermal microclimate grids**, ThermaShift AI continuously monitors asphalt and ground surface temperatures, calculates OSHA/ISO 7243 Wet Bulb Globe Temperature (WBGT) strain, dynamically computes thermal relief relocation vectors, dispatches autonomous voice calls via **CALL-E Telephony**, and generates 1-click legal compliance audit reports.
 
-[Explore Live Demo](https://thermashift-ai.vercel.app) • [Interactive Swagger Docs](https://thermashift-ai.onrender.com/docs) • [System Architecture](#-system-architecture) • [Scientific Grounding](#-scientific--regulatory-grounding)
+[Explore Live Demo](https://thermashift-ai.vercel.app) • [Watch Video Demo](https://www.youtube.com/watch?v=Rwnp5l3qAh0) • [Interactive Swagger Docs](https://thermashift-ai.onrender.com/docs) • [System Architecture](#-system-architecture) • [Scientific Grounding](#-scientific--regulatory-grounding)
 
 </div>
+
+---
+
+## 📺 Video Walkthrough & Live Demo
+
+[![ThermaShift AI Video Demonstration](https://img.youtube.com/vi/Rwnp5l3qAh0/maxresdefault.jpg)](https://www.youtube.com/watch?v=Rwnp5l3qAh0)
+
+> 🎥 **Watch the Full Video Walkthrough on YouTube:** [https://www.youtube.com/watch?v=Rwnp5l3qAh0](https://www.youtube.com/watch?v=Rwnp5l3qAh0)  
+> *Demonstrating real-time FortyGuard thermal ingestion, OSHA WBGT risk engine, 100m spatial microclimate radar, and autonomous emergency voice dispatch.*
 
 ---
 
