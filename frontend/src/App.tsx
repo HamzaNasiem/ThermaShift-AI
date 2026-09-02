@@ -4,6 +4,7 @@ import Sites from './pages/Sites'
 import Workers from './pages/Workers'
 import ErrorBoundary from './components/ErrorBoundary'
 import ThermaShiftLogo from './components/ThermaShiftLogo'
+import VotingBanner from './components/VotingBanner'
 
 function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
   const location = useLocation()
@@ -76,6 +77,7 @@ export default function App() {
             </Routes>
           </ErrorBoundary>
         </main>
+        <VotingBanner />
       </div>
     </BrowserRouter>
   )
